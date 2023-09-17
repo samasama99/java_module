@@ -9,6 +9,7 @@ class Program {
         System.out.print("-> ");
 
         boolean stop = false;
+        int max = Integer.MIN_VALUE;
         while (!stop) {
             String input = user_input.next();
             char[] input_chars = input.toCharArray();
@@ -22,15 +23,8 @@ class Program {
                 }
 
                 histogram[input_chars[i]]++;
+                max = Integer.max(max, histogram[input_chars[i]]);
             }
-        }
-
-        int max = Integer.MIN_VALUE;
-        for (int num :
-                histogram) {
-            if (num == 0)
-                continue;
-            max = Integer.max(max, num);
         }
 
         char[] chars = new char[10];
@@ -40,6 +34,7 @@ class Program {
         while (true) {
             int index = -1;
             int max_index = -1;
+
             for (int num : histogram) {
                 index++;
                 if (num == 0)
@@ -60,7 +55,7 @@ class Program {
             histogram[max_index] = 0;
         }
 
-        int real_max = max >= 10 ? 10 : max;
+        int real_max = Integer.min(max, 10);
         int[][] graph = new int[current][real_max + 1];
         for (int i = 0; i < current; i++) {
             for (int j = 0; j < real_max + 1; j++) {
