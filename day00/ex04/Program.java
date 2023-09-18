@@ -77,15 +77,13 @@ class Program {
         for (int i = 0; i < real_max + 1; i++) {
             for (int j = 0; j < current; j++) {
                 if (graph[j][i] == -1) {
-                    System.out.print(' ');
+                    System.out.printf("%4c", ' ');
                 }
                 else if (graph[j][i] == -2) {
-                    System.out.print('#');
+                    System.out.printf("%4c", '#');
                 } else {
-                    System.out.print(graph[j][i]);
+                    System.out.printf("%4d", graph[j][i]);
                 }
-                System.out.print('\t');
-                System.out.print('\t');
             }
             System.out.println();
         }
@@ -95,9 +93,7 @@ class Program {
                 chars) {
             if (i == current)
                 break;
-            System.out.print(c);
-            System.out.print('\t');
-            System.out.print('\t');
+            System.out.printf("%4c", c);
             i++;
         }
         System.out.println();
