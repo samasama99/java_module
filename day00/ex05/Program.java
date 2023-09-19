@@ -120,24 +120,11 @@ public class Program {
     String[] names = new String[10];
     getNames(names, user_input);
     int[][] classes = new int[10][2];
-     getTimetable(classes, user_input);
+    getTimetable(classes, user_input);
     int[][][] attendances = new int[10][31][7];
     getAttendance(attendances, names, user_input);
 
-    // for (String name : names) {
-    //   if (name == null)
-    //     break;
-    //   System.out.println(name);
-    // }
-    // for (int[] c : classes) {
-    //   if (c == null || c[0] == 0) {
-    //     break;
-    //   }
-    //   System.out.printf("%3d %3d\n", c[0], c[1]);
-    // }
-
-  
-      System.out.println();
+    System.out.println();
     System.out.printf("%10s|", "");
     for (int i = 1; i < 31; i++) {
       for (int j = 1; j < 7; j++) {
