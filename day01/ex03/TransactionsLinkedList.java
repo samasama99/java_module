@@ -3,25 +3,24 @@ import java.util.UUID;
 class TransactionNode {
     Transaction value;
     TransactionNode next;
+    TransactionNode previous;
 }
 
 public class TransactionsLinkedList implements TransactionsList {
     int size = 0;
     TransactionNode head;
+    TransactionNode tail;
 
     public void add_transaction(Transaction transaction) {
         if (head == null) {
             head = new TransactionNode();
+            tail = head;
             head.value = transaction;
-            head.next = null;
         } else {
-            TransactionNode tmp = head;
-            while (tmp.next != null) {
-                tmp = tmp.next;
-            }
-            tmp.next = new TransactionNode();
-            tmp.next.value = transaction;
-            tmp.next.next = null;
+            tail.next = new TransactionNode();
+            tail.next.value = transaction;
+            tail.next.previous = tail;
+            tail = tail.next;
         }
         size++;
     }
@@ -29,17 +28,19 @@ public class TransactionsLinkedList implements TransactionsList {
     public void remove_by_id(UUID id) {
         if (head.value.getIdentifier() == id) {
             head = head.next;
+            if (head != null)
+                head.previous = null;
+            else
+                tail = null;
+            size--;
         } else {
             TransactionNode tmp = head;
             while (tmp != null && !tmp.value.getIdentifier().equals(id)) {
                 tmp = tmp.next;
             }
-            TransactionNode tmp2 = head;
             if (tmp != null) {
-                while (tmp2.next != tmp) {
-                    tmp2 = tmp2.next;
-                }
-                tmp2.next = tmp.next;
+                tmp.previous.next = tmp.next;
+                tmp.next.previous = tmp.previous;
                 size--;
             }
         }

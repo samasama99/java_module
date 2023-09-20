@@ -22,6 +22,16 @@ class Program {
                     arr2) {
                 System.out.println(a.getIdentifier().toString());
             }
+            list.add_transaction(t2);
+            list.remove_by_id(t1.getIdentifier());
+            list.remove_by_id(t3.getIdentifier());
+
+            System.out.println("****");
+            Transaction[] arr3 = list.toArray();
+            for (Transaction a:
+                    arr3) {
+                System.out.println(a.getIdentifier().toString());
+            }
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
