@@ -40,7 +40,8 @@ public class TransactionsLinkedList implements TransactionsList {
             }
             if (tmp != null) {
                 tmp.previous.next = tmp.next;
-                tmp.next.previous = tmp.previous;
+                if (tmp.next != null)
+                    tmp.next.previous = tmp.previous;
                 size--;
             } else {
                 throw new Exception("TransactionNotFoundException");

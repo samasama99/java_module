@@ -1,5 +1,16 @@
 import java.util.UUID;
 
+class IllegalTransactionException extends Exception {
+    public IllegalTransactionException() {
+        super("IllegalTransactionException");
+    }
+}
+
+class WrongTransferCategory extends Exception {
+    public WrongTransferCategory() {
+        super("WrongTransferCategory ");
+    }
+}
 
 public class Transaction {
     public enum TransferCategory {debits, credits}
@@ -7,11 +18,12 @@ public class Transaction {
     public Transaction(User user1, User user2, TransferCategory transfer_category, Integer transfer_amount) throws Exception {
         switch (transfer_category) {
             case debits -> {
-                if (transfer_amount < 0) throw new Exception("Transform amount should be positive be transfer category is debits !");
+                if (transfer_amount < 0)
+                    throw new Exception("Transform amount should be positive be transfer category is debits !");
                 Sender = user1;
                 Recipient = user2;
                 if (Sender.getBalance() < transfer_amount) {
-                    throw new Exception("The sender doesn't have enough money !");
+                    throw new IllegalTransactionException();
                 }
                 Recipient.addBalance(transfer_amount);
                 Sender.deductBalance(transfer_amount);
@@ -19,10 +31,11 @@ public class Transaction {
                 Sender.transactions.add_transaction(this);
             }
             case credits -> {
-                if (transfer_amount >= 0) throw new Exception("Transform amount should be negative be transfer category is credits !");
+                if (transfer_amount >= 0)
+                    throw new Exception("Transform amount should be negative be transfer category is credits !");
                 Sender = user2;
-                if (Sender.getBalance() < transfer_amount * - 1) {
-                    throw new Exception("The sender doesn't have enough money !");
+                if (Sender.getBalance() < transfer_amount * -1) {
+                    throw new IllegalTransactionException();
                 }
                 Recipient = user1;
                 Recipient.addBalance(transfer_amount * -1);
@@ -30,7 +43,7 @@ public class Transaction {
                 Recipient.transactions.add_transaction(this);
                 Sender.transactions.add_transaction(this);
             }
-            default -> throw new Exception("The wrong transfer category !");
+            default -> throw new WrongTransferCategory();
         }
         Transfer_category = transfer_category;
         Transfer_amount = transfer_amount;
