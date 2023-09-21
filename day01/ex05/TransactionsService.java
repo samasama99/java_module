@@ -1,14 +1,18 @@
+import java.util.UUID;
+
 public class TransactionsService {
-    public UsersArrayList users = new UsersArrayList();
+    public UsersList users = new UsersArrayList();
 
     //  • Adding a user
-    void add_user(String name, int balance) throws Exception {
-        users.add_user(new User(name, balance));
+    User add_user(String name, int balance) throws Exception {
+        User user = new User(name, balance);
+        users.add_user(user);
+        return user;
     }
 
     //  • Retrieving a user’s balance
-    User get_user_balance(int id) throws Throwable {
-        return users.get_user_by_id(id);
+    int get_user_balance(int id) throws Exception {
+        return users.get_user_by_id(id).getBalance();
     }
 
     //  • Performing a transfer transaction (user IDs and transfer amount are specified). In
@@ -23,6 +27,10 @@ public class TransactionsService {
 //      specified)
     Transaction[] retrieving_transfers(int id) throws Throwable {
         return this.users.get_user_by_id(id).transactions.toArray();
+    }
+
+    void remove_transfer(int id, UUID tid) throws Exception {
+        users.get_user_by_id(id).transactions.remove_by_id(tid);
     }
 
     //  • Check validity of transactions (returns an ARRAY of unpaired transactions).
@@ -41,7 +49,6 @@ public class TransactionsService {
         TransactionsLinkedList unpaired = new TransactionsLinkedList();
 
         for (int i = 0; i < users.size(); i++) {
-//            System.out.println(i);
             for (Transaction t : users.get_user_by_index(i).transactions.toArray()) {
                 if (t.getRecipient() == users.get_user_by_index(i)) {
                     if (!validate(t, t.getSender().transactions.toArray())) {

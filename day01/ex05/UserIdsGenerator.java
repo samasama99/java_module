@@ -1,5 +1,5 @@
 public class UserIdsGenerator {
-    private int id = 0;
+    private int id = 1;
     private static UserIdsGenerator singleton;
     public int generateId() {
         return id++;
