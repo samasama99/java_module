@@ -25,7 +25,8 @@ public class TransactionsLinkedList implements TransactionsList {
         size++;
     }
 
-    public void remove_by_id(UUID id) throws Exception {
+    public Transaction remove_by_id(UUID id) throws Exception {
+        Transaction ret = null;
         if (head.value.getIdentifier() == id) {
             head = head.next;
             if (head != null)
@@ -39,7 +40,9 @@ public class TransactionsLinkedList implements TransactionsList {
                 tmp = tmp.next;
             }
             if (tmp != null) {
-                tmp.previous.next = tmp.next;
+                ret = tmp.value;
+                if (tmp.previous != null)
+                    tmp.previous.next = tmp.next;
                 if (tmp.next != null)
                     tmp.next.previous = tmp.previous;
                 size--;
@@ -47,6 +50,7 @@ public class TransactionsLinkedList implements TransactionsList {
                 throw new Exception("TransactionNotFoundException");
             }
         }
+        return ret;
     }
 
     public Transaction[] toArray() {

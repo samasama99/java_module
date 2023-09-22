@@ -29,8 +29,8 @@ public class TransactionsService {
         return this.users.get_user_by_id(id).transactions.toArray();
     }
 
-    void remove_transfer(int id, UUID tid) throws Exception {
-        users.get_user_by_id(id).transactions.remove_by_id(tid);
+    Transaction remove_transfer(int id, UUID tid) throws Exception {
+        return users.get_user_by_id(id).transactions.remove_by_id(tid);
     }
 
     //  • Check validity of transactions (returns an ARRAY of unpaired transactions).
