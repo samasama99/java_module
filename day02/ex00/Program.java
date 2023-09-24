@@ -1,8 +1,8 @@
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 public class Program {
     public static void main(String[] args) {
@@ -18,12 +18,11 @@ public class Program {
                     signature.append((char) Integer.parseInt(s, 16));
                 }
                 signatures.put(signature.toString().trim(), type.trim());
-                System.out.printf("Type : [%s] : Signature [%s]\n", type.trim(), signature.toString().trim());
             }
-            HashMap<String, String> files = new HashMap<>();
+            ArrayList<String> files = new ArrayList<>();
             for (String arg : args) {
                 FileInputStream tmp = new FileInputStream(arg);
-                int byte_read = 0;
+                int byte_read;
                 StringBuilder str = new StringBuilder();
                 while ((byte_read = tmp.read()) != -1) {
                     char c = (char) byte_read;
@@ -32,32 +31,40 @@ public class Program {
                     str.append(c);
                 }
                 String _str = str.toString().trim();
+                String res = "UNDEFINED";
                 for (var entry : signatures.entrySet()) {
                     String key = entry.getKey();
                     String value = entry.getValue();
 
                     if (key.contains(_str) || _str.contains(key)) {
-                        files.put(arg, value);
+                        res = value;
                         break;
-                    } else {
-                        files.put(arg, "UNDEFINED");
                     }
                 }
+
+                System.out.print("-> ");
+                System.out.println(arg);
+                System.out.println("PROCESSED");
+                files.add(res);
+                tmp.close();
             }
 
-            System.out.println();
             var out = new FileOutputStream("result.txt");
-            files.forEach((key, value) -> {
+            files.forEach((value) -> {
                 String tmp = value + "\n";
                 try {
                     out.write(tmp.getBytes());
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                System.out.printf("key: [%s], value: [%s]\n", key, value);
             });
+            System.out.print("-> ");
+            System.out.println(42);
+            out.close();
+            signatures_file.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
     }
 }
