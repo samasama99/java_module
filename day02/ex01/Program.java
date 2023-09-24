@@ -6,7 +6,7 @@ import java.util.TreeSet;
 
 public class Program {
 
-    static HashMap<String, Integer> words_frequency(BufferedReader reader) throws IOException {
+    static HashMap<String, Integer> wordsFrequency(final BufferedReader reader) throws IOException {
         var dictionary = new HashMap<String, Integer>();
         String line;
         while ((line = reader.readLine()) != null) {
@@ -26,19 +26,19 @@ public class Program {
         return dictionary;
     }
 
-    public static void main(String... args) throws IOException {
-        FileReader file1 = new FileReader(args[0]);
-        FileReader file2 = new FileReader(args[1]);
+    public static void main(final String... args) throws IOException {
+        final FileReader file1 = new FileReader(args[0]);
+        final FileReader file2 = new FileReader(args[1]);
 
-        BufferedReader reader1 = new BufferedReader(file1);
-        BufferedReader reader2 = new BufferedReader(file2);
+        final BufferedReader reader1 = new BufferedReader(file1);
+        final BufferedReader reader2 = new BufferedReader(file2);
 
-        HashMap<String, Integer> dic1 = words_frequency(reader1);
-        HashMap<String, Integer> dic2 = words_frequency(reader2);
+        final HashMap<String, Integer> dic1 = wordsFrequency(reader1);
+        final HashMap<String, Integer> dic2 = wordsFrequency(reader2);
 
 
-        long Numerator = 0;
-        double Denominator;
+        long numerator = 0;
+        double denominator;
         long a = 0;
         long b = 0;
         var orderedSet = new TreeSet<String>();
@@ -47,11 +47,11 @@ public class Program {
         for (String word : orderedSet) {
             long count1 = dic1.getOrDefault(word, 0);
             long count2 = dic2.getOrDefault(word, 0);
-            Numerator += count1 * count2;
+            numerator += count1 * count2;
             a += count1 * count1;
             b += count2 * count2;
         }
-        Denominator = Math.sqrt(a) * Math.sqrt(b);
-        System.out.printf("Similarity = %.2f", ((double) Numerator) / Denominator);
+        denominator = Math.sqrt(a) * Math.sqrt(b);
+        System.out.printf("Similarity = %.2f", ((double) numerator) / denominator);
     }
 }

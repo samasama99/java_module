@@ -1,58 +1,60 @@
 import java.util.Scanner;
 
 public class Program {
-
-  public static void printResult(int nums) {
-    if (nums == 0)
+static final BASE = 10;
+  public static void printResult(final int nums) {
+    if (nums == 0) {
       return;
-    printResult(nums / 10);
-    int num = nums % 10;
+
+    }
+    printResult(nums / BASE);
+    int num = nums % BASE;
     for (int i = 0; i < num; i++) {
       System.out.print("=");
     }
     System.out.println(">");
   }
 
-  public static void main(String[] args) {
-    Scanner user_input = new Scanner(System.in);
+  public static void main(final String[] args) {
+    Scanner userInput = new Scanner(System.in);
 
-    int current_week = 0;
-    int week_minimal_grade = 0;
+    int currentWeek = 0;
+    int weekMinimalGrade = 0;
 
     for (int i = 0; i < 18; i++) {
       System.out.print("-> ");
-      String week = user_input.next();
+      String week = userInput.next();
 
       if (week.equals("42")) {
         break;
       }
 
-      int week_num = user_input.nextInt();
+      int weekNum = userInput.nextInt();
 
       if (!week.equals("Week")) {
-        System.err.println("llegalArgument");
-        user_input.close();
+        System.err.println("illegalArgument");
+        userInput.close();
         return;
       }
-      if (current_week >= week_num) {
-        System.err.println("llegalArgument");
-        user_input.close();
+      if (currentWeek >= weekNum) {
+        System.err.println("illegalArgument");
+        userInput.close();
         return;
       }
-      current_week = week_num;
+      currentWeek = weekNum;
 
       int min = Integer.MAX_VALUE;
       // System.out.println();
       System.out.print("-> ");
       for (int j = 0; j < 5; j++) {
-        int num = user_input.nextInt();
+        int num = userInput.nextInt();
         min = min < num ? min : num;
       }
-      week_minimal_grade = week_minimal_grade * 10 + min;
+      weekMinimalGrade = weekMinimalGrade * 10 + min;
     }
-    // System.out.println("total " + week_minimal_grade);
-    printResult(week_minimal_grade);
+    // System.out.println("total " + weekMinimalGrade);
+    printResult(weekMinimalGrade);
 
-    user_input.close();
+    userInput.close();
   }
 }

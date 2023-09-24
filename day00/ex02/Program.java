@@ -1,31 +1,32 @@
 import java.util.Scanner;
 
-/**
- * Program
- */
 public class Program {
 
-    public static void main(String[] args) {
-        int num = 0;
-        int querie = 0;
-        Scanner user_input = new Scanner(System.in);
+    static final int END = 42;
+    static final int BASE = 10;
+
+    public static void main(final String[] args) {
+        int num;
+        int query = 0;
+        Scanner userInput = new Scanner(System.in);
 
         while (true) {
             System.out.print("-> ");
-            
+
             try {
-                num = user_input.nextInt();
+                num = userInput.nextInt();
             } catch (Exception e) {
                 break;
             }
 
-            if (num == 42)
+            if (num == END) {
                 break;
+            }
 
             int total = 0;
             while (num != 0) {
-                total += num % 10;
-                num /= 10;
+                total += num % BASE;
+                num /= BASE;
             }
 
             int iteration = 2;
@@ -38,10 +39,11 @@ public class Program {
                 iteration++;
             }
 
-            if (prime)
-                querie++;
+            if (prime) {
+                query++;
+            }
         }
-        System.out.println("Count of coffee-request : " + querie);
-        user_input.close();
+        System.out.println("Count of coffee-request : " + query);
+        userInput.close();
     }
 }

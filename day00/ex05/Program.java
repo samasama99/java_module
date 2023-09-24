@@ -108,8 +108,7 @@ public class Program {
 
   static boolean isClassExist(int[][] classes, int day, int hour) {
     for (int[] c : classes) {
-      if (c[0] == day && c[1] == hour)
-        return true;
+      if (c[0] == day && c[1] == hour) return true;
     }
     return false;
   }
@@ -136,8 +135,7 @@ public class Program {
     System.out.println();
 
     for (int i = 0; i < attendances.length; i++) {
-      if (names[i] == null)
-        continue;
+      if (names[i] == null) continue;
       System.out.printf("%-10s|", names[i]);
       for (int j = 1; j < attendances[i].length; j++) {
         for (int j2 = 1; j2 < attendances[i][j].length; j2++) {
