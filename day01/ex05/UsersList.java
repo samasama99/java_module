@@ -1,9 +1,9 @@
 public interface UsersList {
-    void add_user(User user);
+  void addUser(User user);
 
-    User get_user_by_index(int index) throws Exception;
+  User getUserByIndex(int index) throws Exception;
 
-    User get_user_by_id(int id) throws Exception;
+  User getUserById(int id) throws Exception;
 
-    int size();
+  int size();
 }

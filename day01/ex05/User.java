@@ -1,34 +1,39 @@
 public class User {
-    private final Integer Identifier;
-    public TransactionsLinkedList transactions = new TransactionsLinkedList();
+  private final Integer identifier;
+  private final TransactionsLinkedList transactions = new TransactionsLinkedList();
+  private final String name;
+  private Integer balance;
 
-    public Integer getIdentifier() {
-        return Identifier;
+  public User(final String newName, final Integer newBalance) throws Exception {
+    name = newName;
+    if (newBalance < 0) {
+      throw new Exception("The balance cant be negative !");
     }
+    this.balance = newBalance;
+    identifier = UserIdsGenerator.getInstance().generateId();
+  }
 
-    public String getName() {
-        return Name;
-    }
+  public TransactionsLinkedList getTransactions() {
+    return transactions;
+  }
 
-    public Integer getBalance() {
-        return Balance;
-    }
+  public Integer getIdentifier() {
+    return identifier;
+  }
 
-    private final String Name;
-    private Integer Balance;
+  public String getName() {
+    return name;
+  }
 
-    public User(String name, Integer balance) throws Exception {
-        Name = name;
-        if (balance < 0) throw new Exception("The balance cant be negative !");
-        Balance = balance;
-        Identifier = UserIdsGenerator.getInstance().generateId();
-    }
+  public Integer getBalance() {
+    return balance;
+  }
 
-    public void addBalance(Integer transferAmount) {
-        Balance += transferAmount;
-    }
+  public void addBalance(final Integer transferAmount) {
+    balance += transferAmount;
+  }
 
-    public void deductBalance(Integer transferAmount) {
-        Balance -= transferAmount;
-    }
+  public void deductBalance(final Integer transferAmount) {
+    balance -= transferAmount;
+  }
 }

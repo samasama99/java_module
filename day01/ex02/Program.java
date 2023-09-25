@@ -15,12 +15,12 @@ class Program {
       list.addUser(new User("anass", 200));
       list.addUser(new User("amir", 30000));
       for (int i = 0; i < list.size(); i++) {
-        User uIndex = list.getUserByIndex(i);
-        User uId = list.getUserById(i);
+        User index = list.getUserByIndex(i);
+        User id = list.getUserById(i);
         System.out.printf(
-            "%-5d %-10s %-10d\n", uIndex.getIdentifier(), uIndex.getName(), uIndex.getBalance());
+            "%-5d %-10s %-10d\n", index.getIdentifier(), index.getName(), index.getBalance());
         System.out.printf(
-            "%-5d %-10s %-10d\n", uId.getIdentifier(), uId.getName(), uId.getBalance());
+            "%-5d %-10s %-10d\n", id.getIdentifier(), id.getName(), id.getBalance());
       }
     } catch (Exception e) {
       System.out.println(e.getMessage());

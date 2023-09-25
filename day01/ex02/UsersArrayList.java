@@ -1,7 +1,11 @@
 public class UsersArrayList implements UsersList {
 
-  User[] users = new User[10];
+  private User[] users = new User[10];
   private int size = 0;
+
+  public User[] getUsers() {
+    return users;
+  }
 
   public void addUser(final User user) {
     if (users.length == size) {
