@@ -44,11 +44,24 @@ public class Program {
   }
 
   public static void main(final String[] args) {
-    Scanner userInput = new Scanner(System.in);
-    try {
+    try (Scanner userInput = new Scanner(System.in)) {
       if (args.length > 0) {
-        cd(args[0]);
-        System.out.println(args[0]);
+        String stripped = args[0].strip();
+        String[] split = stripped.split("=", 0);
+        if (!split[0].strip().equals( "--current-folder")) {
+          throw new Exception("Please provide a valid arg !");
+        }
+        String path = split[1].strip();
+        File newDirectory = new File(String.valueOf(Path.of(path).toAbsolutePath()));
+        System.out.println("dfds");
+        if (newDirectory.exists() && newDirectory.isDirectory()) {
+          System.setProperty("user.dir", path);
+        } else if (newDirectory.exists()) {
+          throw new NotDirectoryException(path);
+        } else {
+          throw new FileNotFoundException();
+        }
+        System.out.println(pwd());
       } else {
         System.out.println(pwd());
       }
@@ -100,8 +113,6 @@ public class Program {
     } catch (Exception e) {
       System.out.println("Exception");
       System.out.println(e.getMessage());
-    } finally {
-      userInput.close();
     }
   }
 }
