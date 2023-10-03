@@ -22,7 +22,7 @@ class Program {
         }
 
         histogram[inputChars[i]]++;
-        max = Integer.max(max, histogram[inputChars[i]]);
+        max = max > histogram[inputChars[i]] ? max : histogram[inputChars[i]];
       }
     }
 
@@ -52,7 +52,7 @@ class Program {
       histogram[maxIndex] = 0;
     }
 
-    int realMax = Integer.min(max, 10);
+    int realMax = max < 10 ? max : 10;
     int[][] graph = new int[current][realMax + 1];
     for (int i = 0; i < current; i++) {
       for (int j = 0; j < realMax + 1; j++) {
