@@ -1,8 +1,8 @@
 public class Program {
-  static final int MAX = 479598;
+  static final int INPUT = 479598;
   static final int BASE = 10;
   public static void main(final String[] args) {
-    int num = MAX;
+    int num = INPUT;
     int total = 0;
 
     while (num != 0) {
