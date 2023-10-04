@@ -4,16 +4,17 @@ public class Program {
 
   static final int BASE = 10;
 
-  public static void printResult(final int nums) {
+  public static void printResult(final long nums) {
     if (nums == 0) {
       return;
     }
 
     printResult(nums / BASE);
-    int num = nums % BASE;
+    long num = nums % BASE;
     for (int i = 0; i < num; i++) {
       System.out.print("=");
     }
+
     System.out.println(">");
   }
 
@@ -21,7 +22,7 @@ public class Program {
     Scanner userInput = new Scanner(System.in);
 
     int currentWeek = 0;
-    int weekMinimalGrade = 0;
+    long weekMinimalGrade = 0;
 
     for (int i = 0; i < 18; i++) {
       String week = userInput.next();

@@ -120,15 +120,14 @@ public class Program {
     getNames(names, user_input);
     int[][] classes = new int[10][2];
     getTimetable(classes, user_input);
-    int[][][] attendances = new int[10][31][7];
+    int[][][] attendances = new int[10][30][7];
     getAttendance(attendances, names, user_input);
 
     System.out.println();
-    System.out.printf("%10s|", "");
     for (int i = 1; i < 31; i++) {
       for (int j = 1; j < 7; j++) {
         if (isClassExist(classes, i % 7, j))
-          System.out.printf("%2d:00 %s %2d|", j, getDayName(i), i);
+          System.out.printf("%1d:00%3s%3d|", j, getDayName(i), i);
       }
     }
 
@@ -140,9 +139,9 @@ public class Program {
       for (int j = 1; j < attendances[i].length; j++) {
         for (int j2 = 1; j2 < attendances[i][j].length; j2++) {
           if (attendances[i][j][j2] != 0) {
-            System.out.printf("%11d|", attendances[i][j][j2]);
+            System.out.printf("%10d|", attendances[i][j][j2]);
           } else if (isClassExist(classes, j % 7, j2)) {
-            System.out.printf("%11s|", "");
+            System.out.printf("%10s|", "");
           }
         }
       }
