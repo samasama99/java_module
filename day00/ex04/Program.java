@@ -1,29 +1,20 @@
 import java.util.Scanner;
 
 class Program {
-  static final int MAX = 65535;
+  static final int MAX_UNICODE_BMP = 65535;
 
   public static void main(final String[] args) {
-    int[] histogram = new int[MAX];
 
     Scanner userInput = new Scanner(System.in);
-    System.out.print("-> ");
 
-    boolean stop = false;
+    int[] histogram = new int[MAX_UNICODE_BMP];
     int max = Integer.MIN_VALUE;
-    while (!stop) {
-      String input = userInput.next();
-      char[] inputChars = input.toCharArray();
+    String input = userInput.next();
+    char[] inputChars = input.toCharArray();
 
-      for (int i = 0; i < inputChars.length; i++) {
-        if (i + 1 < inputChars.length && inputChars[i] == '4' && inputChars[i + 1] == '2') {
-          stop = true;
-          break;
-        }
-
-        histogram[inputChars[i]]++;
-        max = Integer.max(max, histogram[inputChars[i]]);
-      }
+    for (char c : inputChars) {
+      histogram[c]++;
+      max = max > histogram[c] ? max: histogram[c];
     }
 
     char[] chars = new char[10];
@@ -36,7 +27,9 @@ class Program {
 
       for (int num : histogram) {
         index++;
-        if (num == 0) {continue;}
+        if (num == 0) {
+          continue;
+        }
         if (maxIndex == -1) {
           maxIndex = index;
         } else if (num > histogram[maxIndex]) {
@@ -44,7 +37,8 @@ class Program {
         }
       }
 
-      if (maxIndex == -1 || current == 10) break;
+      if (maxIndex == -1 || current == 10)
+        break;
 
       chars[current] = (char) maxIndex;
       appearance[current] = histogram[maxIndex];
@@ -52,7 +46,7 @@ class Program {
       histogram[maxIndex] = 0;
     }
 
-    int realMax = Integer.min(max, 10);
+    int realMax = max < 10 ? max : 10;
     int[][] graph = new int[current][realMax + 1];
     for (int i = 0; i < current; i++) {
       for (int j = 0; j < realMax + 1; j++) {
@@ -62,7 +56,8 @@ class Program {
 
     for (int i = 0; i < current; i++) {
       int start = realMax - (appearance[i] * 10 / max);
-      if (max < 10) start = max - appearance[i];
+      if (max < 10)
+        start = max - appearance[i];
       graph[i][start] = appearance[i];
 
       for (int j = start + 1; j < realMax + 1; j++) {
@@ -85,7 +80,8 @@ class Program {
 
     int i = 0;
     for (char c : chars) {
-      if (i == current) break;
+      if (i == current)
+        break;
       System.out.printf("%4c", c);
       i++;
     }

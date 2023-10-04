@@ -1,14 +1,14 @@
 public class Program {
-  static final int MAX = 479598;
-  static final int BASE = 10;
-  public static void main(final String[] args) {
-    int num = MAX;
-    int total = 0;
 
-    while (num != 0) {
-      total += num % BASE;
-      num /= BASE;
-    }
+  public static void main(final String[] args) {
+    int num = 479598;
+    int total = (num / 1) % 10 +
+        (num / 10) % 10 +
+        (num / 100) % 10 +
+        (num / 1000) % 10 +
+        (num / 10000) % 10 +
+        (num / 100000) % 10;
     System.out.println(total);
   }
+
 }

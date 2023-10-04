@@ -2,30 +2,40 @@ import java.util.Scanner;
 
 public class Program {
     public static void main(final String[] args) {
+
         Scanner userInput = new Scanner(System.in);
-        System.out.print("-> ");
+
         int num;
-        try {
+
+        if (userInput.hasNextInt()) {
             num = userInput.nextInt();
-        } catch (Exception e) {
+        } else {
             System.out.println("IllegalArgument");
             userInput.close();
+            System.exit(-1);
             return;
         }
+
         if (num <= 1) {
             System.out.println("IllegalArgument");
-        } else {
-            int iteration = 2;
-            boolean prime = true;
-            while (iteration < num / 2) {
-                if (num % iteration == 0) {
-                    prime = false;
-                    break;
-                }
-                iteration++;
-            }
-            System.out.println(prime + " " + (iteration - 1));
+            userInput.close();
+            System.exit(-1);
+            return;
         }
+
+        int iteration = 0;
+        int divisor = 2;
+        boolean prime = true;
+        while (divisor * divisor <= num) {
+            iteration++;
+            if (num % divisor == 0) {
+                prime = false;
+                break;
+            }
+            divisor++;
+        }
+
+        System.out.println(prime + " " + iteration);
 
         userInput.close();
     }

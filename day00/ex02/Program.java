@@ -8,15 +8,25 @@ public class Program {
     public static void main(final String[] args) {
         int num;
         int query = 0;
+
         Scanner userInput = new Scanner(System.in);
 
         while (true) {
-            System.out.print("-> ");
 
-            try {
+            if (userInput.hasNextInt()) {
                 num = userInput.nextInt();
-            } catch (Exception e) {
-                break;
+            } else {
+                System.out.println("IllegalArgument");
+                userInput.close();
+                System.exit(-1);
+                return;
+            }
+
+            if (num <= 1) {
+                System.out.println("IllegalArgument");
+                userInput.close();
+                System.exit(-1);
+                return;
             }
 
             if (num == END) {
@@ -31,7 +41,7 @@ public class Program {
 
             int iteration = 2;
             boolean prime = true;
-            while (iteration < total / 2) {
+            while (iteration * iteration <= total) {
                 if (total % iteration == 0) {
                     prime = false;
                     break;
