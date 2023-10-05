@@ -46,7 +46,8 @@ public class Program {
         default:
       }
       classes[number_of_classes][0] = _day;
-      classes[number_of_classes++][1] = _hour;
+      classes[number_of_classes][1] = _hour;
+      number_of_classes++;
     }
     return number_of_classes;
   }
@@ -62,12 +63,14 @@ public class Program {
       }
 
       int index = getNameIndex(name, names);
-      int hour = user_input.nextInt();
-      int day = user_input.nextInt();
+      int hour = user_input.nextInt() - 1;
+      int day = user_input.nextInt() - 1;
       String attendance = user_input.next();
-      int _attendance = -1;
+      int _attendance = 0;
       if (attendance.compareTo("HERE") == 0) {
         _attendance = 1;
+      } else if (attendance.compareTo("NOT_HERE") == 0) {
+        _attendance = -1;
       }
       attendances[index][day][hour] = _attendance;
     }
@@ -87,7 +90,7 @@ public class Program {
   }
 
   static String getDayName(int day) {
-    switch (day % 7) {
+    switch (day) {
       case 0:
         return "MO";
       case 1:
@@ -106,9 +109,10 @@ public class Program {
     return "NULL";
   }
 
-  static boolean isClassExist(int[][] classes, int day, int hour) {
+  static boolean isClass(int[][] classes, int day, int hour) {
     for (int[] c : classes) {
-      if (c[0] == day && c[1] == hour) return true;
+      if (c[0] == (day) && c[1] == (hour))
+        return true;
     }
     return false;
   }
@@ -120,27 +124,29 @@ public class Program {
     getNames(names, user_input);
     int[][] classes = new int[10][2];
     getTimetable(classes, user_input);
-    int[][][] attendances = new int[10][30][7];
+    int[][][] attendances = new int[10][30][5];
     getAttendance(attendances, names, user_input);
 
     System.out.println();
-    for (int i = 1; i < 31; i++) {
-      for (int j = 1; j < 7; j++) {
-        if (isClassExist(classes, i % 7, j))
-          System.out.printf("%1d:00%3s%3d|", j, getDayName(i), i);
+    System.out.print("           ");
+    for (int day = 0; day < 30; day++) {
+      for (int hour = 0; hour < 5; hour++) {
+        if (isClass(classes, (day + 1) % 7, hour + 1))
+          System.out.printf("%1d:00%3s%3d|", hour + 1, getDayName((day + 1) % 7), day + 1);
       }
     }
 
     System.out.println();
 
-    for (int i = 0; i < attendances.length; i++) {
-      if (names[i] == null) continue;
-      System.out.printf("%-10s|", names[i]);
-      for (int j = 1; j < attendances[i].length; j++) {
-        for (int j2 = 1; j2 < attendances[i][j].length; j2++) {
-          if (attendances[i][j][j2] != 0) {
-            System.out.printf("%10d|", attendances[i][j][j2]);
-          } else if (isClassExist(classes, j % 7, j2)) {
+    for (int studentIndex = 0; studentIndex < names.length; studentIndex++) {
+      if (names[studentIndex] == null)
+        continue;
+      System.out.printf("%-10s|", names[studentIndex]);
+      for (int day = 0; day < 30; day++) {
+        for (int hour = 0; hour < 5; hour++) {
+          if (attendances[studentIndex][day][hour] != 0) {
+            System.out.printf("%10d|", attendances[studentIndex][day][hour]);
+          } else if (isClass(classes, (day + 1) % 7, hour + 1)) {
             System.out.printf("%10s|", "");
           }
         }

@@ -1,14 +1,6 @@
 import java.util.Scanner;
 
 public class Program {
-	static int closeSqrt(int x) {
-		int a = 1;
-		while (x > a * a) {
-			a++;
-		}
-		return a;
-	}
-
     public static void main(final String[] args) {
 
         Scanner userInput = new Scanner(System.in);
