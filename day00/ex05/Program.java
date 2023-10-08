@@ -5,7 +5,6 @@ public class Program {
   static int getNames(String[] names, Scanner user_input) {
     int number_of_student = 0;
     while (number_of_student != 10) {
-      System.out.print("-> ");
       String name = user_input.next();
       if (name.compareTo(".") == 0) {
         break;
@@ -19,7 +18,6 @@ public class Program {
     int number_of_classes = 0;
 
     while (number_of_classes != 10) {
-      System.out.print("-> ");
       String hour = user_input.next();
 
       if (hour.compareTo(".") == 0) {
@@ -55,7 +53,6 @@ public class Program {
   static int getAttendance(int[][][] attendances, String[] names, Scanner user_input) {
     int number_of_attendances = 0;
     while (true) {
-      System.out.print("-> ");
       String name = user_input.next();
 
       if (name.compareTo(".") == 0) {
