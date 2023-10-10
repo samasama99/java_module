@@ -1,9 +1,9 @@
 import java.util.UUID;
 
 public interface TransactionsList {
-  void addTransaction(Transaction transaction);
+    void addTransaction(Transaction transaction);
 
-  void removeById(UUID id) throws Exception;
+    void removeById(UUID id) throws Exception;
 
-  Transaction[] toArray();
+    Transaction[] toArray();
 }

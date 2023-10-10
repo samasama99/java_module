@@ -1,34 +1,36 @@
 public class User {
-  private final Integer identifier;
-  private final String name;
-  private Integer balance;
+    private final String name;
+    private Integer identifier;
+    private Integer balance;
 
-  public User(final String n, final Integer b) throws Throwable {
-    name = n;
-    if (b < 0) {
-      throw new Throwable("The b cant be negative !");
+    public User(final String n, final Integer b) {
+        name = n;
+        if (b < 0) {
+            System.out.println("The b cant be negative !");
+            System.exit(-1);
+            return;
+        }
+        balance = b;
+        identifier = UserIdsGenerator.getInstance().generateId();
     }
-    balance = b;
-    identifier = UserIdsGenerator.getInstance().generateId();
-  }
 
-  public Integer getIdentifier() {
-    return identifier;
-  }
+    public Integer getIdentifier() {
+        return identifier;
+    }
 
-  public String getName() {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public Integer getBalance() {
-    return balance;
-  }
+    public Integer getBalance() {
+        return balance;
+    }
 
-  public void addBalance(Integer transferAmount) {
-    balance += transferAmount;
-  }
+    public void addBalance(Integer transferAmount) {
+        balance += transferAmount;
+    }
 
-  public void deductBalance(Integer transferAmount) {
-    balance -= transferAmount;
-  }
+    public void deductBalance(Integer transferAmount) {
+        balance -= transferAmount;
+    }
 }
