@@ -1,8 +1,8 @@
-package fr.leet.numbers;
-
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import fr.leet.numbers.NumberWorker;
 
 import static org.junit.jupiter.api.Assertions.*;
 

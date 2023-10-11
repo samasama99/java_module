@@ -14,11 +14,12 @@ public class Program {
         String[] typeSignature = line.split(",", 0);
         String type = typeSignature[0];
         StringBuilder signature = new StringBuilder();
-        for (String s : typeSignature[1].trim().split(" ")) {
-          signature.append((char) Integer.parseInt(s, 16));
+        for (String s : typeSignature[1].split(" ")) {
+          signature.append(s);
         }
-        signatures.put(signature.toString().trim(), type.trim());
+        signatures.put(signature.toString(), type);
       }
+
       ArrayList<String> files = new ArrayList<>();
       for (String arg : args) {
         FileInputStream tmp = new FileInputStream(arg);
@@ -29,15 +30,14 @@ public class Program {
           if (c == '\n') {
             break;
           }
-          str.append(c);
+          str.append(String.format("%02x", byteRead).toUpperCase());
         }
-        String trimmed = str.toString().trim();
         String res = "UNDEFINED";
         for (var entry : signatures.entrySet()) {
           String key = entry.getKey();
           String value = entry.getValue();
 
-          if (key.contains(trimmed) || trimmed.contains(key)) {
+          if (str.toString().contains(key) || key.contains(str)) {
             res = value;
             break;
           }

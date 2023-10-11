@@ -23,6 +23,7 @@ public class Program {
       throw new FileNotFoundException();
     }
   }
+
   static Path pwd() {
     return Path.of(System.getProperty("user.dir")).toAbsolutePath().normalize();
   }
@@ -43,17 +44,36 @@ public class Program {
     Files.move(Path.of(source), Path.of(target), StandardCopyOption.REPLACE_EXISTING);
   }
 
+  static String readLine(String err, Scanner userInput) {
+    String line = null;
+    boolean validInput = false;
+    while (!validInput) {
+      try {
+        if (!userInput.hasNext()) {
+          throw new InputMismatchException(err);
+        }
+        line = userInput.next().strip();
+        validInput = true;
+      } catch (InputMismatchException e) {
+        System.out.println("Error: " + e.getMessage());
+        System.out.println("Please try again.");
+        userInput.nextLine();
+        System.out.print("-> ");
+      }
+    }
+    return line;
+  }
+
   public static void main(final String[] args) {
     try (Scanner userInput = new Scanner(System.in)) {
       if (args.length > 0) {
         String stripped = args[0].strip();
         String[] split = stripped.split("=", 0);
-        if (!split[0].strip().equals( "--current-folder")) {
+        if (!split[0].strip().equals("--current-folder")) {
           throw new Exception("Please provide a valid arg !");
         }
         String path = split[1].strip();
         File newDirectory = new File(String.valueOf(Path.of(path).toAbsolutePath()));
-        System.out.println("dfds");
         if (newDirectory.exists() && newDirectory.isDirectory()) {
           System.setProperty("user.dir", path);
         } else if (newDirectory.exists()) {
@@ -69,31 +89,17 @@ public class Program {
         try {
           String command = null;
           System.out.print("-> ");
-          boolean validInput = false;
-          while (!validInput) {
-            try {
-              if (!userInput.hasNext()) {
-                throw new InputMismatchException("Please enter a valid command");
-              }
-              command = userInput.next().strip();
-              validInput = true;
-            } catch (InputMismatchException e) {
-              System.out.println("Error: " + e.getMessage());
-              System.out.println("Please try again.");
-              userInput.nextLine();
-              System.out.print("-> ");
-            }
-          }
+          command = readLine("Please enter a valid command", userInput);
           switch (command) {
             case "ls" -> ls();
             case "pwd" -> System.out.println(pwd());
             case "cd" -> {
-              String dir = userInput.next().strip();
+              String dir = readLine("Please enter a valid directory", userInput).strip();
               cd(dir);
             }
             case "mv" -> {
-              String source = userInput.next().strip();
-              String target = userInput.next().strip();
+              String source = readLine("Please enter a valid source", userInput).strip();
+              String target = readLine("Please enter a valid target", userInput).strip();
               mv(source, target);
             }
             case "exit" -> {
@@ -106,14 +112,14 @@ public class Program {
         } catch (NotDirectoryException e) {
           System.out.println("NotDirectoryException");
         } catch (Exception e) {
-          System.out.println("Exception");
+          System.out.print("Exception: ");
           System.out.println(e.getMessage());
         }
       }
     } catch (Exception e) {
-      System.out.println("Exception");
+      System.out.print("Exception: ");
       System.out.println(e.getMessage());
     }
   }
 }
-//      $> java Program --current-folder=/Users/Admin
+// $> java Program --current-folder=/Users/Admin

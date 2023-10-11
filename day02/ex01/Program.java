@@ -1,5 +1,7 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.TreeSet;
@@ -26,30 +28,51 @@ public class Program {
     return dictionary;
   }
 
-  public static void main(final String... args) throws IOException {
-    final FileReader file1 = new FileReader(args[0]);
-    final FileReader file2 = new FileReader(args[1]);
-
-    final BufferedReader reader1 = new BufferedReader(file1);
-    final BufferedReader reader2 = new BufferedReader(file2);
-
-    final HashMap<String, Integer> dic1 = wordsFrequency(reader1);
-    final HashMap<String, Integer> dic2 = wordsFrequency(reader2);
-
-    long numerator = 0;
-    long a = 0;
-    long b = 0;
-    var orderedSet = new TreeSet<String>();
-    orderedSet.addAll(dic1.keySet());
-    orderedSet.addAll(dic2.keySet());
-    for (String word : orderedSet) {
-      long count1 = dic1.getOrDefault(word, 0);
-      long count2 = dic2.getOrDefault(word, 0);
-      numerator += count1 * count2;
-      a += count1 * count1;
-      b += count2 * count2;
+  public static void main(final String... args) {
+    if (args.length < 2) {
+      System.out.println("Please provide two files for the comparison !");
+      System.exit(-1);
     }
-    final double denominator = Math.sqrt(a) * Math.sqrt(b);
-    System.out.printf("Similarity = %.2f", ((double) numerator) / denominator);
+
+    try {
+      final FileReader file1 = new FileReader(args[0]);
+      final FileReader file2 = new FileReader(args[1]);
+
+      final BufferedReader reader1 = new BufferedReader(file1);
+      final BufferedReader reader2 = new BufferedReader(file2);
+
+      final HashMap<String, Integer> dic1 = wordsFrequency(reader1);
+      final HashMap<String, Integer> dic2 = wordsFrequency(reader2);
+
+      long numerator = 0;
+      long a = 0;
+      long b = 0;
+      var orderedSet = new TreeSet<String>();
+      orderedSet.addAll(dic1.keySet());
+      orderedSet.addAll(dic2.keySet());
+      for (String word : orderedSet) {
+        long count1 = dic1.getOrDefault(word, 0);
+        long count2 = dic2.getOrDefault(word, 0);
+        numerator += count1 * count2;
+        a += count1 * count1;
+        b += count2 * count2;
+      }
+      final double denominator = Math.sqrt(a) * Math.sqrt(b);
+      System.out.printf("Similarity = %.2f", ((double) numerator) / denominator);
+
+      final FileWriter dictionaryOutput = new FileWriter("dictionary.txt");
+      try (final BufferedWriter writer = new BufferedWriter(dictionaryOutput)) {
+        orderedSet.stream().forEach(word -> {
+          try {
+            writer.write(word + "\n");
+          } catch (IOException e) {
+            System.out.println(e.getMessage());
+          }
+        });
+      }
+
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+    }
   }
 }
