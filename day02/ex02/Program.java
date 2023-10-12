@@ -16,6 +16,9 @@ public class Program {
     String real_path = String.valueOf(current_path.resolve(path).normalize());
     File newDirectory = new File(real_path);
     if (newDirectory.exists() && newDirectory.isDirectory()) {
+      if (!newDirectory.canRead()) {
+        throw new SecurityException("permission denied");
+      }
       System.setProperty("user.dir", real_path);
     } else if (newDirectory.exists()) {
       throw new NotDirectoryException(path);
@@ -41,7 +44,23 @@ public class Program {
   }
 
   static void mv(String source, String target) throws IOException {
-    Files.move(Path.of(source), Path.of(target), StandardCopyOption.REPLACE_EXISTING);
+    Path sourceResolved = pwd().resolve(source).toAbsolutePath().normalize();
+    Path targetResolved = pwd().resolve(target).toAbsolutePath().normalize();
+
+    if (Files.isDirectory(targetResolved)) {
+      System.out.println(sourceResolved);
+      System.out.println(targetResolved);
+      System.out.println(targetResolved.resolve(source));
+      Files.move(
+          sourceResolved,
+          targetResolved.resolve(source),
+          StandardCopyOption.REPLACE_EXISTING);
+    } else {
+      Files.move(
+          sourceResolved,
+          targetResolved,
+          StandardCopyOption.REPLACE_EXISTING);
+    }
   }
 
   static String readLine(String err, Scanner userInput) {
@@ -108,9 +127,11 @@ public class Program {
             default -> throw new IllegalStateException("Unexpected value: " + command);
           }
         } catch (FileNotFoundException e) {
-          System.out.println("FileNotFoundException");
+          System.out.print("Exception: ");
+          System.out.println("there is no file with this name");
         } catch (NotDirectoryException e) {
-          System.out.println("NotDirectoryException");
+          System.out.print("Exception: ");
+          System.out.println("this is not a directory");
         } catch (Exception e) {
           System.out.print("Exception: ");
           System.out.println(e.getMessage());
