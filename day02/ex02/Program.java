@@ -7,7 +7,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.InputMismatchException;
-import java.util.Objects;
 import java.util.Scanner;
 
 public class Program {
@@ -34,7 +33,7 @@ public class Program {
   static void ls() throws FileNotFoundException, NotDirectoryException {
     File dir = new File(String.valueOf(pwd()));
     if (dir.exists() && dir.isDirectory()) {
-      Arrays.stream(Objects.requireNonNull(dir.listFiles()))
+      Arrays.stream(dir.listFiles())
           .forEach(file -> System.out.printf("%s %d KB\n", file.getName(), file.length()));
     } else if (dir.exists()) {
       throw new NotDirectoryException(dir.getName());
