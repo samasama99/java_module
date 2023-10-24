@@ -21,7 +21,7 @@ public class Program {
         String[] splited = typeSignature[1].split(" ");
         maxSignatureLenght = maxSignatureLenght > splited.length ? maxSignatureLenght : splited.length;
         for (String s : splited) {
-          signature.append(s);
+          signature.append(s.toUpperCase());
         }
 
         signatures.put(signature.toString(), type);
@@ -48,10 +48,6 @@ public class Program {
               StringBuilder str = new StringBuilder();
               int len = 0;
               while (((byteRead = tmp.read()) != -1) && len < maxSignatureLenght) {
-                char c = (char) byteRead;
-                if (c == '\n') {
-                  break;
-                }
                 str.append(String.format("%02x", byteRead).toUpperCase());
                 len++;
               }
@@ -60,7 +56,7 @@ public class Program {
                 String key = entry.getKey();
                 String value = entry.getValue();
 
-                if (str.toString().contains(key) || key.contains(str)) {
+                if (str.toString().startsWith(key)) {
                   res = value;
                   break;
                 }

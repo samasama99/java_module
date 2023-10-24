@@ -1,58 +1,99 @@
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 
+import javax.naming.SizeLimitExceededException;
+
 public class Program {
-    public static void main(final String[] args) throws InterruptedException {
-        final int size = Integer.parseInt(args[0]);
-        final int threadCount = Integer.parseInt(args[1]);
-        int step = size / threadCount;
-        int rest = size % threadCount;
-        Random random = new Random();
-        int[] array = IntStream.range(0, size).map((int i) -> random.nextInt() % 1000).toArray();
-        System.out.printf("Sum: %d\n", Arrays.stream(array).sum());
-        List<Thread> threads = new ArrayList<>(threadCount);
-        RangeSum[] res = new RangeSum[threadCount];
 
-        int startIndex = 0;
-        for (int i = 0; i < threadCount; i++) {
-            int endIndex = startIndex + step;
-            final int start = startIndex;
-            final int end = endIndex;
+    public static <T> T parseCommandLineArgument(String[] args, String name, Function<String, T> parser) {
+        String target = Arrays
+                .stream(args)
+                .filter(arg -> arg.startsWith("--" + name + "="))
+                .findFirst()
+                .orElse(null);
+        if (target == null)
+            throw new NoSuchElementException(name);
+        String value = target.substring(name.length() + 3);
+        return parser.apply(value);
+    }
 
-            int finalI = i;
-            threads.add(
-                    new Thread(
-                            () -> {
-                                int sum = Arrays.stream(array, start, end).sum();
-                                res[finalI] = new RangeSum(start, end, sum);
-                            }));
-            startIndex = endIndex;
+    static Random getRandomGenerator(final String[] args) {
+        try {
+            final int seed = parseCommandLineArgument(args, "seed", Integer::parseInt);
+            System.out.println("Random" + seed);
+            return new Random(seed);
+        } catch (NoSuchElementException e) {
+            System.out.println("Random");
+            return new Random();
         }
-        if (rest != 0) {
-            int finalStartIndex = startIndex;
-            Runnable r =
-                    () -> {
-                        int sum =
-                                Arrays.stream(array, finalStartIndex, finalStartIndex + rest + 1)
-                                        .sum();
-                        res[threadCount - 1] =
-                                new RangeSum(finalStartIndex, finalStartIndex + rest + 1, sum);
-                    };
-            threads.add(new Thread(r));
-        }
+    }
 
-        for (Thread t : threads) {
-            t.start();
-        }
-        for (Thread t : threads) {
-            t.join();
-        }
+    public static void main(final String[] args) {
+        try {
+            final int size = parseCommandLineArgument(args, "arraySize", Integer::parseInt);
+            final int threadCount = parseCommandLineArgument(args, "threadCount", Integer::parseInt);
+            final Random random = getRandomGenerator(args);
 
-        int index = 0;
-        for (RangeSum r : res) {
-            System.out.printf("Thread %d: from %d to %d sum is %d\n", index, r.start, r.end, r.sum);
-            index++;
+            if (size > 2_000_000) {
+                throw new SizeLimitExceededException("the maximum size of an array is 2'000'000");
+            }
+            if (threadCount > size) {
+                throw new SizeLimitExceededException(
+                        "the number of threads is bigger than the number of elements in the given array");
+            }
+
+            final int step = (int) Math.ceil((float) size / (float) threadCount);
+
+            final int[] array = IntStream
+                    .range(0, size)
+                    .map(i -> random.nextInt() % 1000)
+                    .toArray();
+
+            List<Thread> threads = new ArrayList<>(threadCount);
+
+            RangeSum[] ranges = new RangeSum[threadCount];
+
+            for (int index = 0; index < threadCount; index++) {
+                final int start = index * step;
+                final int end = Integer.min(start + step, size);
+
+                final RangeSum rangeSum = ranges[index] = new RangeSum(
+                        Arrays.stream(array, start, end),
+                        start,
+                        end);
+
+                threads.add(new Thread(() -> rangeSum.calculateSum()));
+            }
+
+            for (Thread t : threads) {
+                t.start();
+            }
+
+            System.out.printf("Sum: %d\n", Arrays.stream(array).sum());
+            for (Thread t : threads) {
+                t.join();
+            }
+
+            int index = 0;
+            int multiThreadingSum = 0;
+            for (RangeSum range : ranges) {
+                System.out.printf(
+                        "Thread %d: from %d to %d sum is %d\n",
+                        index, range.getStart(), range.getEnd() - 1, range.getSum());
+                multiThreadingSum += range.getSum();
+                index++;
+            }
+            System.out.printf("Sum by threads: %d\n", multiThreadingSum);
+        } catch (NoSuchElementException e) {
+            System.out.println("Please provide the argument: " + e.getMessage());
+            System.exit(-1);
+        } catch (NumberFormatException e) {
+            System.out.println("Please provide a valid argument: " + e.getMessage());
+            System.exit(-1);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            System.exit(-1);
         }
-        System.out.printf("Sum by threads: %d", Arrays.stream(res).mapToInt(x -> x.sum).sum());
     }
 }

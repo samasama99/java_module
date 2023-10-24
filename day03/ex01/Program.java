@@ -4,8 +4,18 @@ import java.util.List;
 
 public class Program {
     public static void main(String[] args) throws InterruptedException {
-        int count = Integer.parseInt(args[0]);
-        simulation(List.of("Egg", "Hen", "Human", "Test"), count);
+        if (args.length < 1 || !args[0].startsWith("--count=")) {
+            System.out.println("Please provide the count option!");
+            System.exit(-1);
+        }
+        try {
+            String value = args[0].substring("--count=".length());
+            final int count = Integer.parseInt(value);
+            simulation(List.of("Egg", "Hen"), count);
+        } catch (Exception e) {
+            System.out.println("Please provide a valid count option!");
+            System.exit(-1);
+        }
     }
 
     public static void simulation(List<String> wordList, int count) throws InterruptedException {
@@ -22,9 +32,10 @@ public class Program {
             thread.start();
             threads.add(thread);
         }
-        for (var t : threads) {
-            t.join();
+        for (var thread : threads) {
+            thread.join();
         }
+
     }
 
     private static Thread consumerFunction(List<String> buffer) {
@@ -37,6 +48,7 @@ public class Program {
                         buffer.notify();
                         buffer.wait();
                     }
+                    buffer.notify();
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
