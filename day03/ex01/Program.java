@@ -1,58 +1,103 @@
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class Program {
+
+    public static <T> Optional<T> parseCommandLineArgument(String[] args, String argName, Function<String, T> parser) {
+        return Stream
+                .of(args)
+                .filter(arg -> arg.startsWith("--" + argName + "="))
+                .findFirst()
+                .map(arg -> arg.substring(argName.length() + 3))
+                .map(parser);
+    }
+
     public static void main(String[] args) throws InterruptedException {
-        if (args.length < 1 || !args[0].startsWith("--count=")) {
-            System.out.println("Please provide the count option!");
-            System.exit(-1);
-        }
         try {
-            String value = args[0].substring("--count=".length());
-            final int count = Integer.parseInt(value);
+            Optional<Integer> countOptional = parseCommandLineArgument(args, "count", Integer::parseInt);
+            final int count = countOptional.orElseThrow(
+                    () -> new NoSuchElementException("Please provide the count option (--count={number})"));
+
+            if (count < 0) {
+                throw new Exception(
+                        "Count can't be negative!");
+            }
             simulation(List.of("Egg", "Hen"), count);
         } catch (Exception e) {
-            System.out.println("Please provide a valid count option!");
+            System.out.println("Count should be positive!");
             System.exit(-1);
         }
     }
 
     public static void simulation(List<String> wordList, int count) throws InterruptedException {
-        List<String> buffer = new LinkedList<>();
-
-        for (int i = 0; i < count; i++) {
-            buffer.addAll(wordList);
-        }
+        Queue<String> queue = new LinkedList<>();
 
         List<Thread> threads = new ArrayList<>(wordList.size());
 
-        for (var w : wordList) {
-            Thread thread = consumerFunction(buffer);
+        Thread producer = producerFunctionFactory(queue, wordList, count);
+
+        for (int i = 0; i < wordList.size(); i++) {
+            Thread thread = consumerFunctionFactory(queue);
             thread.start();
             threads.add(thread);
         }
+        producer.start();
         for (var thread : threads) {
             thread.join();
         }
+        producer.join();
 
     }
 
-    private static Thread consumerFunction(List<String> buffer) {
+    private static Thread consumerFunctionFactory(Queue<String> buffer) {
         return new Thread(() -> {
             try {
                 synchronized (buffer) {
-                    while (!buffer.isEmpty()) {
-                        String value = buffer.remove(0);
+                    while (true) {
+                        if (buffer.isEmpty()) {
+                            buffer.wait();
+                        }
+                        String value = buffer.poll();
+                        if (value == null)
+                            break;
                         System.out.println(value);
-                        buffer.notify();
+                        buffer.notifyAll();
                         buffer.wait();
                     }
-                    buffer.notify();
                 }
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    private static Thread producerFunctionFactory(Queue<String> buffer, List<String> wordList, int count) {
+        return new Thread(
+                () -> {
+                    try {
+                        synchronized (buffer) {
+                            for (int i = 0; i < count; i++) {
+                                buffer.addAll(wordList);
+                                buffer.notifyAll();
+                                buffer.wait();
+                            }
+                            for (int i = 0; i < count; i++) {
+                                buffer.add(null);
+                                buffer.notifyAll();
+                                buffer.wait();
+                            }
+                            buffer.notifyAll();
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
     }
 }
