@@ -1,37 +1,53 @@
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class Program {
-    static Runnable printStringCountTimesFactory(final String str, final int count) {
-        return () -> IntStream.range(0, count).forEach((int c) -> System.out.println(str));
+
+    public static <T> Optional<T> parseCommandLineArgument(String[] args, String name, Function<String, T> parser) {
+        return Stream
+                .of(args)
+                .filter(arg -> arg.startsWith("--" + name + "="))
+                .findFirst()
+                .map(arg -> arg.substring(name.length() + 3))
+                .map(parser);
     }
 
-    public static void main(final String[] args) throws InterruptedException {
-        if (args.length < 1 || !args[0].startsWith("--count=")) {
-            System.out.println("Please provide the count option!");
-            System.exit(-1);
-        }
+    static Runnable printStringCountTimesFactory(final String str, final int count) {
+        return () -> IntStream
+                .range(0, count)
+                .forEach(c -> System.out.println(str));
+    }
+
+    public static void main(final String[] args) {
         try {
-            String value = args[0].substring("--count=".length());
-            final int count = Integer.parseInt(value);
+            final int count = parseCommandLineArgument(args, "count", Integer::parseInt)
+                    .orElseThrow(() -> new NoSuchElementException("Provide the count option (--count={int})"));
+
+            if (count < 0) {
+                throw new Exception(
+                        "Count can't be negative!");
+            }
+
             Runnable hen = printStringCountTimesFactory("Hen", count);
             Runnable egg = printStringCountTimesFactory("Egg", count);
 
-            Thread[] threads = new Thread[] {
-                    new Thread(hen), new Thread(egg)
-            };
+            var threads = List.of(new Thread(hen), new Thread(egg));
 
-            for (var t : threads) {
-                t.start();
+            for (var thread : threads) {
+                thread.start();
             }
 
-            for (var t : threads) {
-                t.join();
+            for (var thread : threads) {
+                thread.join();
             }
 
-            IntStream.range(0, count).forEach((int c) -> System.out.println("human"));
+            IntStream.range(0, count).forEach(c -> System.out.println("human"));
         } catch (Exception e) {
-            System.out.println("Please provide a valid count option!");
-            System.exit(-1);
+            System.out.println(e.getMessage());
         }
     }
 }

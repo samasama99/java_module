@@ -1,4 +1,3 @@
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,7 +30,7 @@ public class Program {
             }
             simulation(List.of("Egg", "Hen"), count);
         } catch (Exception e) {
-            System.out.println("Count should be positive!");
+            System.out.println(e.getMessage());
             System.exit(-1);
         }
     }
@@ -59,14 +58,16 @@ public class Program {
     private static Thread consumerFunctionFactory(Queue<String> buffer) {
         return new Thread(() -> {
             try {
-                synchronized (buffer) {
-                    while (true) {
+                while (true) {
+                    synchronized (buffer) {
                         if (buffer.isEmpty()) {
                             buffer.wait();
                         }
                         String value = buffer.poll();
-                        if (value == null)
-                            break;
+                        if (value == null) {
+                            buffer.notifyAll();
+                            return;
+                        }
                         System.out.println(value);
                         buffer.notifyAll();
                         buffer.wait();
@@ -82,18 +83,18 @@ public class Program {
         return new Thread(
                 () -> {
                     try {
-                        synchronized (buffer) {
-                            for (int i = 0; i < count; i++) {
+                        for (int i = 0; i < count; i++) {
+                            synchronized (buffer) {
                                 buffer.addAll(wordList);
                                 buffer.notifyAll();
                                 buffer.wait();
                             }
-                            for (int i = 0; i < count; i++) {
+                        }
+                        for (int i = 0; i < wordList.size(); i++) {
+                            synchronized (buffer) {
                                 buffer.add(null);
                                 buffer.notifyAll();
-                                buffer.wait();
                             }
-                            buffer.notifyAll();
                         }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
