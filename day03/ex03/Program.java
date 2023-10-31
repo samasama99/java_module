@@ -58,7 +58,9 @@ public class Program {
             Path filesURLs = Path.of("files_urls.txt");
             List<URL> urls = Files
                     .lines(filesURLs)
-                    .filter(line -> !line.strip().isEmpty())
+                    .filter(line -> !line.isBlank())
+                    .map(String::strip)
+                    .distinct()
                     .map(line -> {
                         try {
                             return new URI(line).toURL();

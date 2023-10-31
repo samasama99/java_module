@@ -4,12 +4,13 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.MissingFormatArgumentException;
 
 public class BmpParser {
-    private BufferedImage image;
-    private int width;
-    private int height;
+    private final BufferedImage image;
+    private final int width;
+    private final int height;
 
     public int getWidth() {
         return width;
@@ -19,8 +20,8 @@ public class BmpParser {
         return height;
     }
 
-    public BmpParser(String path) throws IOException {
-        image = ImageIO.read(new File(path));
+    public BmpParser(InputStream file) throws IOException {
+        image = ImageIO.read(file);
         width = image.getWidth();
         height = image.getHeight();
     }

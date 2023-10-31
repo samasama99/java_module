@@ -3,9 +3,11 @@ package fr.leet.printer.app;
 import fr.leet.printer.logic.BmpParser;
 import fr.leet.printer.logic.PixelPrinter;
 
+import java.io.InputStream;
+
 class Program {
     public static void main(String[] args) {
-        if (args.length < 3) {
+        if (args.length < 2) {
             System.out.println("Not enough arguments !");
             System.exit(1);
         }
@@ -20,10 +22,10 @@ class Program {
             System.err.println("Wrong white symbol [b w bmp]");
             System.exit(1);
         }
-        String path = args[2];
-
+        System.out.println(Program.class);
+        InputStream image = Program.class.getResourceAsStream("/resources/image.bmp");
         try {
-            BmpParser bmpParser = new BmpParser(path);
+            BmpParser bmpParser = new BmpParser(image);
             PixelPrinter.print(
                     bmpParser.parse(),
                     blackSymbol,
