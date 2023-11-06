@@ -1,31 +1,33 @@
 package fr.leet.printer.app;
 
-import fr.leet.printer.logic.BmpParser;
+import fr.leet.printer.logic.ImageMatrix;
 import fr.leet.printer.logic.PixelPrinter;
 
 class Program {
     public static void main(String[] args) {
         if (args.length < 3) {
-            System.out.println("Not enough arguments !");
+            System.err.println("Not enough arguments !");
             System.exit(1);
         }
 
-        char blackSymbol = args[0].length() == 1 ? args[0].charAt(0) : (char) -1;
-        char whiteSymbol = args[1].length() == 1 ? args[1].charAt(0) : (char) -1;
+        char whiteSymbol = args[0].length() == 1 ? args[0].charAt(0) : (char) -1;
+        char blackSymbol = args[1].length() == 1 ? args[1].charAt(0) : (char) -1;
+
         if (blackSymbol == (char) -1) {
-            System.err.println("Wrong black symbol [b w bmp]");
+            System.err.println("Wrong black symbol [black white bmp]");
             System.exit(1);
         }
         if (whiteSymbol == (char) -1) {
-            System.err.println("Wrong white symbol [b w bmp]");
+            System.err.println("Wrong white symbol [black white bmp]");
             System.exit(1);
         }
+
         String path = args[2];
 
         try {
-            BmpParser bmpParser = new BmpParser(path);
+            ImageMatrix bmpParser = new ImageMatrix(path);
             PixelPrinter.print(
-                    bmpParser.parse(),
+                    bmpParser.matrix(),
                     blackSymbol,
                     whiteSymbol,
                     bmpParser.getWidth(),
