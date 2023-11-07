@@ -1,0 +1,35 @@
+<pre>
+ ______  _______  _____        _____   ______ _____ __   _ _______ _______  ______
+ |_____] |  |  | |_____]      |_____] |_____/   |   | \  |    |    |______ |_____/
+ |_____] |  |  | |            |       |    \_ __|__ |  \_|    |    |______ |    \_
+
+</pre>                                                                              
+
+# First step you need to compile the projects
+```
+    $ javac -d target -cp lib/JColor-5.5.1.jar:lib/jcommander-1.82.jar src/java/fr/leet/printer/*/*
+```
+
+# extract the lib jars
+```
+	$ jar xf lib/jcommander-1.82.jar com/ && jar xf lib/JColor-5.5.1.jar com/
+```
+
+# cd into target
+```
+    $ cd target
+```
+
+# Copy the resources dir and com dir and the manifest file into target
+```
+    $ cp -r ../src/manifest.txt ../src/resources . && mv ../com .
+```
+
+# Create a jar file 
+```
+	$ jar -cfmv images-to-chars-printer.jar manifest.txt resources com fr
+```
+# After that you can run the jar using using this command
+```
+	$ java -jar images-to-chars-printer.jar --white=RED --black=YELLOW
+```

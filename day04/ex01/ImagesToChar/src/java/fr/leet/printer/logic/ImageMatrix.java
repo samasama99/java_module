@@ -2,12 +2,13 @@ package fr.leet.printer.logic;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.MissingFormatArgumentException;
 
-public class BmpParser {
+public class ImageMatrix {
+    static private final int WHITE = 0xFFFFFFFF;
+    static private final int BLACK = 0xFF000000;
+
     private final BufferedImage image;
     private final int width;
     private final int height;
@@ -20,25 +21,25 @@ public class BmpParser {
         return height;
     }
 
-    public BmpParser(InputStream file) throws IOException {
+    public ImageMatrix(InputStream file) throws IOException {
         image = ImageIO.read(file);
         width = image.getWidth();
         height = image.getHeight();
     }
 
-    public int[][] parse() throws Exception {
-        int[][] map = new int[height][width];
+    public int[][] toMatrix() throws Exception {
+        int[][] matrix = new int[height][width];
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int pixelValue = image.getRGB(x, y);
-                if (pixelValue != 0xFF000000 && pixelValue != 0xFFFFFFFF) {
+                if (pixelValue != WHITE && pixelValue != BLACK) {
                     throw new Exception("provide white and black bmp image");
                 }
-                map[y][x] = pixelValue;
+                matrix[y][x] = pixelValue;
             }
         }
 
-        return map;
+        return matrix;
     }
 }
