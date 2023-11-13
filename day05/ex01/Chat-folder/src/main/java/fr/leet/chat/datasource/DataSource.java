@@ -2,7 +2,6 @@ package fr.leet.chat.datasource;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -11,21 +10,14 @@ import java.util.logging.Logger;
 
 public class DataSource implements javax.sql.DataSource {
 
-    private final HikariConfig config
+    private final HikariConfig config;
     private final HikariDataSource ds;
-
-    static {
-
-    }
 
     public DataSource() {
         config = new HikariConfig();
-        config.setJdbcUrl("jdbc:postgresql://localhost:5432/postgres");
+        config.setJdbcUrl("jdbc:postgresql://localhost:55000/postgres");
         config.setUsername("postgres");
-        config.setPassword("password");
-        config.addDataSourceProperty("cachePrepStmts", "true");
-        config.addDataSourceProperty("prepStmtCacheSize", "250");
-        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+        config.setPassword("postgrespw");
         ds = new HikariDataSource(config);
     }
 
@@ -35,14 +27,9 @@ public class DataSource implements javax.sql.DataSource {
     }
 
     @Override
-    public Connection getConnection(String username, String password) throws SQLException {
-        return null;
-    }
-
-    @Override
     public PrintWriter getLogWriter() throws SQLException {
         return null;
-    }
+    }   
 
     @Override
     public void setLogWriter(PrintWriter out) throws SQLException {
@@ -70,5 +57,9 @@ public class DataSource implements javax.sql.DataSource {
     @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         return false;
+    }
+
+    public void close() {
+        ds.close();
     }
 }

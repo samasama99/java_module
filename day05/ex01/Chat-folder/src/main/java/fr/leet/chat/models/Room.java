@@ -4,6 +4,12 @@ import java.util.List;
 import java.util.Objects;
 
 public class Room {
+
+  private Long id;
+  private String name;
+  private User creator;
+  private List<Message> messages;
+
   public Long getId() {
     return id;
   }
@@ -53,8 +59,10 @@ public class Room {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
     Room room = (Room) o;
     return Objects.equals(id, room.id);
   }
@@ -64,8 +72,4 @@ public class Room {
     return Objects.hash(id);
   }
 
-  private Long id;
-  private String name;
-  private User creator;
-  private List<Message> messages;
 }

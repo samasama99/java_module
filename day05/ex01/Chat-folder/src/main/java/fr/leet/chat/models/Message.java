@@ -5,6 +5,10 @@ import java.util.Objects;
 
 public class Message {
   private Long id;
+  private Date dateTime;
+  private User author;
+  private Room room;
+  private String text;
 
   @Override
   public String toString() {
@@ -25,8 +29,10 @@ public class Message {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
     Message message = (Message) o;
     return Objects.equals(id, message.id);
   }
@@ -36,9 +42,6 @@ public class Message {
     return Objects.hash(id);
   }
 
-  private User author;
-  private Room room;
-  private String text;
 
   public Long getId() {
     return id;
@@ -80,5 +83,4 @@ public class Message {
     this.dateTime = dateTime;
   }
 
-  private Date dateTime;
 }

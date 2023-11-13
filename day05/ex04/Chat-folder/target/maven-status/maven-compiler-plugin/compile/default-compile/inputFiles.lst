@@ -1,0 +1,10 @@
+/Users/orahmoun/repos/java_module/day05/ex04/Chat-folder/src/main/java/fr/leet/chat/repositories/MessagesRepository.java
+/Users/orahmoun/repos/java_module/day05/ex04/Chat-folder/src/main/java/fr/leet/chat/repositories/MessagesRepositoryJdbcImpl.java
+/Users/orahmoun/repos/java_module/day05/ex04/Chat-folder/src/main/java/fr/leet/chat/repositories/UserRepository.java
+/Users/orahmoun/repos/java_module/day05/ex04/Chat-folder/src/main/java/fr/leet/chat/models/User.java
+/Users/orahmoun/repos/java_module/day05/ex04/Chat-folder/src/main/java/fr/leet/chat/repositories/NotSavedSubEntityException.java
+/Users/orahmoun/repos/java_module/day05/ex04/Chat-folder/src/main/java/fr/leet/chat/repositories/UserRepositoryJdbcImpl.java
+/Users/orahmoun/repos/java_module/day05/ex04/Chat-folder/src/main/java/fr/leet/chat/datasource/DataSource.java
+/Users/orahmoun/repos/java_module/day05/ex04/Chat-folder/src/main/java/fr/leet/chat/app/Program.java
+/Users/orahmoun/repos/java_module/day05/ex04/Chat-folder/src/main/java/fr/leet/chat/models/Room.java
+/Users/orahmoun/repos/java_module/day05/ex04/Chat-folder/src/main/java/fr/leet/chat/models/Message.java

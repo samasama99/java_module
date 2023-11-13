@@ -1,0 +1,8 @@
+fr/leet/chat/models/User.class
+fr/leet/chat/repositories/MessagesRepository.class
+fr/leet/chat/app/Program.class
+fr/leet/chat/datasource/DataSource.class
+fr/leet/chat/models/Room.class
+fr/leet/chat/models/Message.class
+fr/leet/chat/repositories/MessagesRepositoryJdbcImpl$NotSavedSubEntityException.class
+fr/leet/chat/repositories/MessagesRepositoryJdbcImpl.class

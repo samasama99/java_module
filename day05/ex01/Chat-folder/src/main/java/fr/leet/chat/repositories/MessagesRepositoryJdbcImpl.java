@@ -19,22 +19,21 @@ public class MessagesRepositoryJdbcImpl implements MessagesRepository {
 
   @Override
   public Optional<Message> findById(Long id) throws SQLException {
-    String SQL_QUERY =
-        """
-                   SELECT m.*,
-                   u.id       as author_id,
-                   u.login    as author_login,
-                   u.password as author_password,
-                   r.id       as room_id,
-                   r.name        room_name
-            FROM messages m
-                     INNER JOIN rooms r on r.id = m.room_id
-                     INNER JOIN users u on m.author_id = u.id
-            where m.id = ?
-            """;
+    String SQL_QUERY = """
+               SELECT m.*,
+               u.id       as author_id,
+               u.login    as author_login,
+               u.password as author_password,
+               r.id       as room_id,
+               r.name        room_name
+        FROM messages m
+                 INNER JOIN rooms r on r.id = m.room_id
+                 INNER JOIN users u on m.author_id = u.id
+        where m.id = ?
+        """;
 
     try (Connection con = datasource.getConnection();
-        PreparedStatement pst = con.prepareStatement(SQL_QUERY); ) {
+        PreparedStatement pst = con.prepareStatement(SQL_QUERY);) {
       pst.setLong(1, id);
       ResultSet rs = pst.executeQuery();
       if (rs.next()) {
