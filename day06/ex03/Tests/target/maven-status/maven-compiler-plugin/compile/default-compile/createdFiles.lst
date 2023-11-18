@@ -1,0 +1,6 @@
+fr/leet/repositories/ProductsRepository.class
+fr/leet/repositories/ProductsRepositoryJdbcImpl.class
+fr/leet/numbers/NumberWorker$IllegalNumberException.class
+fr/leet/models/Product.class
+fr/leet/numbers/NumberWorker.class
+fr/leet/repositories/ProductsRepositoryJdbcImpl$ProductRowMapper.class

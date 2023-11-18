@@ -17,7 +17,7 @@
         </plugins>
     </build>
     <version>1.0-SNAPSHOT</version>
-    <name>Chat-folder</name>
+    <name>Tests</name>
     <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
