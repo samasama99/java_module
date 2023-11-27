@@ -1,4 +1,8 @@
+/Users/orahmoun/repos/java_module/day06/ex03/Tests/src/main/java/fr/leet/services/UsersServiceImpl.java
 /Users/orahmoun/repos/java_module/day06/ex03/Tests/src/main/java/fr/leet/repositories/ProductsRepositoryJdbcImpl.java
+/Users/orahmoun/repos/java_module/day06/ex03/Tests/src/main/java/fr/leet/execptions/AlreadyAuthenticatedException.java
 /Users/orahmoun/repos/java_module/day06/ex03/Tests/src/main/java/fr/leet/repositories/ProductsRepository.java
+/Users/orahmoun/repos/java_module/day06/ex03/Tests/src/main/java/fr/leet/repositories/UsersRepository.java
+/Users/orahmoun/repos/java_module/day06/ex03/Tests/src/main/java/fr/leet/models/User.java
 /Users/orahmoun/repos/java_module/day06/ex03/Tests/src/main/java/fr/leet/numbers/NumberWorker.java
 /Users/orahmoun/repos/java_module/day06/ex03/Tests/src/main/java/fr/leet/models/Product.java

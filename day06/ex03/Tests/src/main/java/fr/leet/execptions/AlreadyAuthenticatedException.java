@@ -1,4 +1,7 @@
 package fr.leet.execptions;
 
-public class AlreadyAuthenticatedException {
+public class AlreadyAuthenticatedException extends Exception {
+  public AlreadyAuthenticatedException() {
+    super();
+  }
 }

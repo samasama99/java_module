@@ -1,6 +1,11 @@
-fr/leet/repositories/ProductsRepository.class
 fr/leet/repositories/ProductsRepositoryJdbcImpl.class
 fr/leet/numbers/NumberWorker$IllegalNumberException.class
 fr/leet/models/Product.class
-fr/leet/numbers/NumberWorker.class
 fr/leet/repositories/ProductsRepositoryJdbcImpl$ProductRowMapper.class
+fr/leet/repositories/UsersRepository.class
+fr/leet/repositories/UsersRepository$EntityNotFoundException.class
+fr/leet/models/User.class
+fr/leet/repositories/ProductsRepository.class
+fr/leet/execptions/AlreadyAuthenticatedException.class
+fr/leet/services/UsersServiceImpl.class
+fr/leet/numbers/NumberWorker.class
