@@ -1,21 +1,16 @@
+import java.util.Arrays;
 import java.util.stream.IntStream;
 
-public class RangeSum {
+public final class RangeSum implements Runnable {
     final private IntStream array;
     final private int start;
     final private int end;
     private int sum;
 
-    public RangeSum(IntStream array, int startInclusive, int endExclusive) {
+    public RangeSum(int[] array, int startInclusive, int endExclusive) {
         this.start = startInclusive;
         this.end = endExclusive;
-        this.array = array;
-    }
-
-    void calculateSum() {
-        if (sum == 0) {
-            this.sum = array.sum();
-        }
+        this.array = Arrays.stream(array, start, end);
     }
 
     int getSum() {
@@ -28,5 +23,12 @@ public class RangeSum {
 
     int getEnd() {
         return end;
+    }
+
+    @Override
+    public void run() {
+        if (sum == 0) {
+            this.sum = array.sum();
+        }
     }
 }

@@ -1,9 +1,8 @@
+import javax.naming.SizeLimitExceededException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
-import javax.naming.SizeLimitExceededException;
 
 public class Program {
     public static <T> Optional<T> parseCommandLineArgument(String[] args, String argName, Function<String, T> parser) {
@@ -17,10 +16,7 @@ public class Program {
 
 
     static Random randomGenerator(Optional<Integer> seed) {
-        if (seed.isPresent()) {
-            return new Random(seed.get());
-        }
-        return new Random();
+        return seed.map(Random::new).orElseGet(Random::new);
     }
 
     public static void main(final String[] args) {
@@ -61,27 +57,22 @@ public class Program {
                     .map(i -> random.nextInt() % 1000)
                     .toArray();
 
-            List<Thread> threads = new ArrayList<>(threadCount);
+            List<RangeSum> ranges = IntStream.range(0, threadCount)
+                    .map(n -> n * step)
+                    .mapToObj(start -> new Range(start, Integer.min(start + step, arraySize)))
+                    .map(range -> new RangeSum(
+                            array,
+                            range.start,
+                            range.end
+                    ))
+                    .toList();
 
-            RangeSum[] ranges = new RangeSum[threadCount];
+            List<Thread> threads = ranges.stream().map(Thread::new).toList();
 
-            for (int index = 0; index < threadCount; index++) {
-                final int start = index * step;
-                final int end = Integer.min(start + step, arraySize);
-
-                final RangeSum rangeSum = ranges[index] = new RangeSum(
-                        Arrays.stream(array, start, end),
-                        start,
-                        end);
-
-                threads.add(new Thread(() -> rangeSum.calculateSum()));
-            }
-
-            for (Thread t : threads) {
-                t.start();
-            }
+            threads.forEach(Thread::start);
 
             System.out.printf("Sum: %d\n", Arrays.stream(array).sum());
+
             for (Thread t : threads) {
                 t.join();
             }
@@ -96,6 +87,7 @@ public class Program {
                 index++;
             }
             System.out.printf("Sum by threads: %d\n", multiThreadingSum);
+            Stream.zip
 
         } catch (NoSuchElementException e) {
             System.out.println("Please provide the argument: " + e.getMessage());
@@ -104,5 +96,11 @@ public class Program {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    private record Range(
+            int start,
+            int end
+    ) {
     }
 }
