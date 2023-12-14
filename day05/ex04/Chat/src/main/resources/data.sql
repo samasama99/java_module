@@ -9,7 +9,10 @@ INSERT INTO rooms (name, owner_id)
 VALUES ('room1', 1),
        ('room2', 2),
        ('room3', 3),
+       ('room6', 3),
        ('room4', 4),
+       ('room7', 4),
+       ('room8', 4),
        ('room5', 5);
 
 INSERT INTO users_rooms (user_id, room_id)

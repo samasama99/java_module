@@ -14,7 +14,7 @@ CREATE TABLE
 CREATE TABLE
     rooms
 (
-    id       serial PRIMARY KEY,
+    id       bigserial PRIMARY KEY,
     name     VARCHAR(50) unique NOT NULL,
     owner_id BIGINT             NOT NULL,
     FOREIGN KEY (owner_id) REFERENCES users (id)
