@@ -3,19 +3,9 @@ package fr.leet.models;
 import java.util.Objects;
 
 public class Product {
-    @Override
-    public String toString() {
-        return "Product{" +
-                "identifier=" + identifier +
-                ", name='" + name + '\'' +
-                ", price=" + price +
-                '}';
-    }
-
     long identifier;
     String name;
     double price;
-
     public Product() {
 
     }
@@ -24,6 +14,15 @@ public class Product {
         this.identifier = identifier;
         this.name = name;
         this.price = price;
+    }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+               "identifier=" + identifier +
+               ", name='" + name + '\'' +
+               ", price=" + price +
+               '}';
     }
 
     public long getIdentifier() {

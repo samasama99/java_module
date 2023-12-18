@@ -11,25 +11,12 @@ import java.util.List;
 import java.util.Optional;
 
 public class ProductsRepositoryJdbcImpl implements ProductsRepository {
-    static class ProductRowMapper implements RowMapper<Product> {
-        @Override
-        public Product mapRow(ResultSet rs, int rowNum) throws SQLException {
-            Product product = new Product();
-            product.setIdentifier(rs.getLong("identifier"));
-            product.setName(rs.getString("name"));
-            product.setPrice(rs.getDouble("price"));
-            return product;
-        }
-    }
-
     JdbcTemplate jdbcTemplate;
     RowMapper<Product> rowMapper;
-
     ProductsRepositoryJdbcImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
         rowMapper = new ProductRowMapper();
     }
-
 
     @Override
     public List<Product> findAll() {
@@ -67,5 +54,16 @@ public class ProductsRepositoryJdbcImpl implements ProductsRepository {
     public void delete(Long id) {
         final String SQL = "DELETE FROM Product WHERE identifier = ?";
         this.jdbcTemplate.update(SQL, id);
+    }
+
+    static class ProductRowMapper implements RowMapper<Product> {
+        @Override
+        public Product mapRow(ResultSet rs, int rowNum) throws SQLException {
+            Product product = new Product();
+            product.setIdentifier(rs.getLong("identifier"));
+            product.setName(rs.getString("name"));
+            product.setPrice(rs.getDouble("price"));
+            return product;
+        }
     }
 }

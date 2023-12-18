@@ -3,15 +3,6 @@ package fr.leet.models;
 import java.util.Objects;
 
 public class Product {
-    @Override
-    public String toString() {
-        return "Product{" +
-                "identifier=" + identifier +
-                ", name='" + name + '\'' +
-                ", price=" + price +
-                '}';
-    }
-
     long identifier;
     String name;
     double price;
@@ -58,8 +49,4 @@ public class Product {
         return identifier == product.identifier && Objects.equals(name, product.name) && Objects.equals(price, product.price);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(identifier, name, price);
-    }
 }

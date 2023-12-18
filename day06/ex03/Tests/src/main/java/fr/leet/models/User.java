@@ -1,47 +1,35 @@
 package fr.leet.models;
 
 public class User {
-  private long identifier;
-  private String login;
-  private String password;
-  private boolean isAuthenticated;
+    private final long identifier;
+    private final String login;
+    private final String password;
+    private boolean isAuthenticated;
 
-  public User(long identifier, String login, String password, boolean isAuthenticated) {
-    this.identifier = identifier;
-    this.login = login;
-    this.password = password;
-    this.isAuthenticated = isAuthenticated;
-  }
+    public User(long identifier, String login, String password, boolean isAuthenticated) {
+        this.identifier = identifier;
+        this.login = login;
+        this.password = password;
+        this.isAuthenticated = isAuthenticated;
+    }
 
-  public long getIdentifier() {
-    return identifier;
-  }
+    public long getIdentifier() {
+        return identifier;
+    }
 
-  public void setIdentifier(long identifier) {
-    this.identifier = identifier;
-  }
+    public String getLogin() {
+        return login;
+    }
 
-  public String getLogin() {
-    return login;
-  }
+    public String getPassword() {
+        return password;
+    }
 
-  public void setLogin(String login) {
-    this.login = login;
-  }
+    public boolean isAuthenticated() {
+        return isAuthenticated;
+    }
 
-  public String getPassword() {
-    return password;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
-  }
-
-  public boolean isAuthenticated() {
-    return isAuthenticated;
-  }
-
-  public void setAuthenticated(boolean isAuthenticated) {
-    this.isAuthenticated = isAuthenticated;
-  }
+    public void setAuthenticated(boolean isAuthenticated) {
+        this.isAuthenticated = isAuthenticated;
+    }
 }

@@ -10,7 +10,6 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.time.Duration;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -98,10 +97,12 @@ public class ProductsRepositoryJdbcImplTest {
             optionalProduct.ifPresent(product -> assertEquals(product, newProduct));
         }
     }
+
     @Test
     void TestDelete() {
         System.out.println("[INFO] TestDelete()");
-        ProductsRepositoryJdbcImpl productsRepositoryJdbc = new ProductsRepositoryJdbcImpl(new JdbcTemplate(dataSource));
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        ProductsRepositoryJdbcImpl productsRepositoryJdbc = new ProductsRepositoryJdbcImpl(jdbcTemplate);
         {
             Optional<Product> optionalProduct = productsRepositoryJdbc.findById(6L);
             assertThrows(NoSuchElementException.class, optionalProduct::orElseThrow);
@@ -121,25 +122,12 @@ public class ProductsRepositoryJdbcImplTest {
     }
 
     @AfterEach
-    void close() {
+    void close() throws Exception {
         System.out.println("[INFO] After Each close()");
-        try {
-            Connection con = dataSource.getConnection();
-            JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-            jdbcTemplate.execute("DROP TABLE Product");
-            try {
-                con.close();
-            } catch (SQLException e) {
-                System.out.println("[ERROR] Failed to get close connection: " + e.getMessage());
-            }
-        } catch (SQLException e) {
-            System.out.println("[ERROR] Failed to get connection: " + e.getMessage());
-        }
-        try {
-            Thread.sleep(Duration.ofSeconds(1));
-        } catch (InterruptedException e) {
-            System.out.println("[ERROR] Failed to sleep in AfterEach close(): " + e.getMessage());
-        }
+        Connection con = dataSource.getConnection();
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        jdbcTemplate.execute("DROP TABLE Product");
+        con.close();
+        Thread.sleep(Duration.ofMillis(100));
     }
-
 }

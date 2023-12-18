@@ -32,11 +32,11 @@ public class ProductsRepositoryJdbcImplTest {
 
     final Product EXPECTED_UPDATED_PRODUCT =
             new Product(3, "product 4", 100.5);
+    private DataSource dataSource;
 
     ProductsRepositoryJdbcImplTest() {
         System.out.println("NEW INSTANCE of ProductsRepositoryJdbcImplTes");
     }
-    private DataSource dataSource;
 
     @BeforeEach
     void init() {
@@ -65,7 +65,7 @@ public class ProductsRepositoryJdbcImplTest {
             System.out.println("[ERROR] Failed to get connection: " + e.getMessage());
         }
         try {
-            Thread.sleep(Duration.ofSeconds(2));
+            Thread.sleep(Duration.ofMillis(100));
         } catch (InterruptedException e) {
             System.out.println("[ERROR] Failed to sleep in AfterEach close(): " + e.getMessage());
         }

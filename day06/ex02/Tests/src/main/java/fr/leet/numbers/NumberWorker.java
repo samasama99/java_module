@@ -2,12 +2,6 @@ package fr.leet.numbers;
 
 public class NumberWorker {
 
-    public static class IllegalNumberException extends Exception {
-        public IllegalNumberException() {
-            super("IllegalNumberException");
-        }
-    }
-
     public boolean isPrime(int number) throws IllegalNumberException {
 
         if (number <= 1) {
@@ -32,5 +26,11 @@ public class NumberWorker {
         }
 
         return total;
+    }
+
+    public static class IllegalNumberException extends Exception {
+        public IllegalNumberException() {
+            super("IllegalNumberException");
+        }
     }
 }
