@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: fr.leet.services.UsersServiceImplTest
 -------------------------------------------------------------------------------
-Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.735 s -- in fr.leet.services.UsersServiceImplTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.994 s -- in fr.leet.services.UsersServiceImplTest
