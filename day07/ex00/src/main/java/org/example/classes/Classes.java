@@ -3,11 +3,14 @@ package org.example.classes;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 public class Classes {
-    public static List<? extends Constructor<?>> getDefaultConstructors(List<Class<?>> classes) throws InvocationTargetException, InstantiationException, IllegalAccessException {
-        return classes.stream().map(_class ->
+    public static List<? extends Constructor<?>> getDefaultConstructors(Collection<Class<?>> classes)
+            throws InvocationTargetException, InstantiationException, IllegalAccessException {
+        return classes.stream()
+                .map(_class ->
                         Arrays.stream(_class.getConstructors())
                                 .filter(constructor -> constructor.getParameterCount() == 0)
                                 .limit(1)
@@ -15,6 +18,8 @@ public class Classes {
                                 .getFirst()
                 )
                 .toList();
+    }
+}
 
 //        for (var constructor : defaultConstructors) {
 //            Object object = constructor.newInstance();
@@ -44,5 +49,3 @@ public class Classes {
 //                .collect(Collectors.toMap(Class::getName));
 //
 //        System.out.println(User.class);
-    }
-}
