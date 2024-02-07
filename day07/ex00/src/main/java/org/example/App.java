@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Parameter;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -43,7 +43,7 @@ public class App {
         String newClassRegex = "new\\s+(\\w+)";
         String editObjectRegex = "edit\\s+(\\w+)";
         String lsmRegex = "lsm\\s+(\\w+)";
-        String lsvClassRegex = "lsvc\\s+(\\w+)";
+//        String lsvClassRegex = "lsvc\\s+(\\w+)";
         String lsvObjectRegex = "lsvo\\s+(\\w+)";
         String callMethodRegex = "call\\s+(\\w+)\\s+(\\w+)(\\s+([\\S\\s]+))*";
         String rmObjectRegex = "rm\\s+(\\w+)";
@@ -77,15 +77,6 @@ public class App {
                     System.out.println("no object was removed");
                 }
             }
-        } else if (input.matches(lsvClassRegex)) {
-            Matcher matcher = Pattern.compile(lsvClassRegex).matcher(input);
-            if (matcher.find()) {
-                String className = matcher.group(1).toUpperCase();
-                SimpleClass simpleClass = classes.get(className);
-                if (simpleClass != null)
-                    simpleClass.params.forEach(System.out::println);
-                else System.out.println("NO");
-            }
         } else if (input.matches(lsvObjectRegex)) {
             Matcher matcher = Pattern.compile(lsvObjectRegex).matcher(input);
             if (matcher.find()) {
@@ -102,8 +93,8 @@ public class App {
             Matcher matcher = Pattern.compile(lsmRegex).matcher(input);
             if (matcher.find()) {
                 String className = matcher.group(1).toUpperCase();
-                if (classes.containsKey(className)) {
-                    classes.get(className).methods().forEach(System.out::println);
+                if (objects.containsKey(className)) {
+                    objects.get(className).simpleMethods().keySet().forEach(System.out::println);
                 } else System.out.println("NO");
             }
         } else if (input.matches(callMethodRegex)) {
@@ -121,32 +112,32 @@ public class App {
 
                 SimpleObject object = objects.get(objectName);
                 if (object != null) {
-                    Optional<Method<Object>> methodOpt = object.methods().stream().filter(m -> m.name().toUpperCase().equals(methodName)).findFirst();
+                    Optional<SimpleMethod> methodOpt = object.simpleMethods().entrySet().stream().filter(m -> m.getKey().toUpperCase().equals(methodName)).findFirst().map(Map.Entry::getValue);
                     if (methodOpt.isPresent()) {
 //                        java.lang.reflect.Method method = methodOpt.get();
 //                        method.setAccessible(true);
-                        Method<Object> simpleMethod = methodOpt.get();
-                        List<Param> params = simpleMethod.params();
+                        SimpleMethod simpleMethod = methodOpt.get();
+                        List<Parameter> parameters = simpleMethod.params();
 
                         String[] parsedParams = paramsGroup.split(" ");
-                        if (params.isEmpty()) {
+                        if (parameters.isEmpty()) {
                             if (simpleMethod.returnType.equals("VOID")) {
-                                simpleMethod.invoke(object);
+                                simpleMethod.invoke();
                             } else
-                                System.out.println(simpleMethod.invoke(object));
+                                System.out.println(simpleMethod.invoke());
                         } else {
-                            if (params.size() != parsedParams.length) {
+                            if (parameters.size() != parsedParams.length) {
                                 System.out.println("wrong number if parameters");
                             } else {
                                 List<Object> parsedValue = new ArrayList<>();
                                 try {
                                     for (int i = 0; i < parsedParams.length; i++) {
-                                        parsedValue.add(parsers.get(params.get(i).type().toUpperCase()).apply(parsedParams[i]));
+                                        parsedValue.add(parsers.get(parameters.get(i).type().toUpperCase()).apply(parsedParams[i]));
                                     }
                                     if (simpleMethod.returnType.equals("VOID"))
-                                        simpleMethod.invoke(object, parsedValue.toArray());
+                                        simpleMethod.invoke( parsedValue.toArray());
                                     else
-                                        System.out.println(simpleMethod.invoke(object, parsedValue.toArray()));
+                                        System.out.println(simpleMethod.invoke(parsedValue.toArray()));
                                 } catch (Exception e) {
                                     System.out.println("Wrong type of the param error: " + e.getMessage());
                                 }
@@ -191,11 +182,17 @@ public class App {
     }
 
     @FunctionalInterface
-    public interface VarArgFunction<R> {
-        R invoke(Object... args);
+    public interface VarArgFunction {
+        Object invoke(Object... args);
     }
 
-    record SimpleClass(String name, Constructor<?> constructor, List<Param> params, List<Method<Object>> methods,
+    @FunctionalInterface
+    interface SimpleMethodInterface {
+        Object invoke(Object... args);
+    }
+
+    record SimpleClass(String name,
+                       Constructor<?> constructor,
                        Class<?> originalClass) {
         static private final Predicate<Object> isObject = Object.class::equals;
         static private final Predicate<java.lang.reflect.Method> isMethodFromObject = method -> isObject.test(method.getDeclaringClass());
@@ -203,9 +200,9 @@ public class App {
         static public SimpleClass createNewSimpleClass(Class<?> c) {
             String name = c.getSimpleName();
 
-            List<Param> params = Arrays.stream(c.getDeclaredFields()).map(Param::fromField).toList();
+            List<Parameter> parameters = Arrays.stream(c.getDeclaredFields()).map(Parameter::fromField).toList();
 
-            int numberOfParams = params.size();
+            int numberOfParams = parameters.size();
 
             Constructor<?> parameterizedConstructor = Arrays.stream(c.getConstructors())
 //                    .filter(constructor -> constructor.getParameterCount() == numberOfParams)
@@ -213,22 +210,26 @@ public class App {
                     .findFirst()
                     .orElseThrow(NoParameterizedConstructor::new);
 
-            List<Method<Object>> methods = Arrays.stream(c.getMethods())
-                    .filter(isMethodFromObject.negate())
-                    .map((m) -> Method.fromMethod(m, null))
-                    .toList();
-
-            return new SimpleClass(name, parameterizedConstructor, params, methods, c);
+            return new SimpleClass(name, parameterizedConstructor, c);
         }
 
         SimpleObject newInstance() {
             try {
                 Object object = constructor.newInstance();
-                List<Method<Object>> methods = Arrays.stream(originalClass.getMethods())
+                Map<String, SimpleMethod> simpleMethods = Arrays.stream(originalClass.getMethods())
                         .filter(isMethodFromObject.negate())
-                        .map((m) -> Method.fromMethod(m, object))
-                        .toList();
-                return new SimpleObject(this, name.toUpperCase() + object.hashCode(), object, methods);
+                        .map((m) -> SimpleMethod.fromMethod(m, object))
+                        .collect(Collectors.toMap(
+                                SimpleMethod::name,
+                                Function.identity()
+                        ));
+                Map<String, SimpleField> simpleFields = Arrays.stream(originalClass.getDeclaredFields())
+                        .map((f) -> SimpleField.fromField(f, object))
+                        .collect(Collectors.toMap(
+                                SimpleField::name,
+                                Function.identity()
+                        ));
+                return new SimpleObject(this, name.toUpperCase() + object.hashCode(), object, simpleMethods, simpleFields);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -241,23 +242,64 @@ public class App {
         }
     }
 
-    record SimpleObject(SimpleClass simpleClass, String objectName, Object object, List<Method<Object>> methods) {
+    static final class SimpleObject {
+        private final SimpleClass simpleClass;
+        private final String objectName;
+        private final Object object;
+        private final Map<String, SimpleMethod> simpleMethods;
+        private final Map<String, SimpleField> simpleFields;
+
+        SimpleObject(SimpleClass simpleClass,
+                     String objectName,
+                     Object object,
+                     Map<String, SimpleMethod> simpleMethods,
+                     Map<String, SimpleField> simpleFields
+        ) {
+            this.simpleClass = simpleClass;
+            this.objectName = objectName;
+            this.object = object;
+            this.simpleMethods = simpleMethods;
+            this.simpleFields = simpleFields;
+        }
+
+        public SimpleClass simpleClass() {
+            return simpleClass;
+        }
+
+        public String objectName() {
+            return objectName;
+        }
+
+        public Map<String, SimpleMethod> simpleMethods() {
+            return simpleMethods;
+        }
+
+        public Map<String, SimpleField> simpleField() {
+            return simpleFields;
+        }
 
     }
 
-    @FunctionalInterface
-    interface SimpleMethodInterface<R> {
-        R invoke(Object... args);
-    }
+    static final class SimpleMethod implements SimpleMethodInterface {
+        private final String name;
+        private final String returnType;
+        private final List<Parameter> parameters;
+        private final VarArgFunction invokable;
 
-    record Method<R>(String name, String returnType, List<Param> params,
-                     VarArgFunction<R> invokable) implements SimpleMethodInterface {
-        static <R> Method<R> fromMethod(java.lang.reflect.Method method, Object object) {
-            Parameter[] parameters = method.getParameters();
-            List<Param> list = Arrays.stream(parameters).map(Param::fromParameter).toList();
-            return new Method<>(method.getName(), method.getReturnType().getSimpleName(), list, (Object... args) -> {
+        SimpleMethod(String name, String returnType, List<Parameter> parameters,
+                     VarArgFunction invokable) {
+            this.name = name;
+            this.returnType = returnType;
+            this.parameters = parameters;
+            this.invokable = invokable;
+        }
+
+        static SimpleMethod fromMethod(Method method, Object object) {
+            java.lang.reflect.Parameter[] parameters = method.getParameters();
+            List<Parameter> list = Arrays.stream(parameters).map(Parameter::fromParameter).toList();
+            return new SimpleMethod(method.getName(), method.getReturnType().getSimpleName(), list, (Object... args) -> {
                 try {
-                    return (R) method.invoke(object, args);
+                    return method.invoke(object, args);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -265,24 +307,36 @@ public class App {
         }
 
         @Override
-        public R invoke(Object... args) {
+        public Object invoke(Object... args) {
             return invokable.invoke(args);
         }
 
 
         @Override
         public String toString() {
-            return returnType + " : " + name + " " + params.stream().map(Param::toString).collect(Collectors.joining(", ", "(", ")"));
+            return returnType + " : " + name + " " + parameters.stream().map(Parameter::toString).collect(Collectors.joining(", ", "(", ")"));
+        }
+
+        public String name() {
+            return name;
+        }
+
+        public String returnType() {
+            return returnType;
+        }
+
+        public List<Parameter> params() {
+            return parameters;
         }
     }
 
-    record Param(String type, String name) {
-        static Param fromField(Field field) {
-            return new Param(field.getType().getSimpleName(), field.getName());
+    record Parameter(String type, String name) {
+        static Parameter fromField(Field field) {
+            return new Parameter(field.getType().getSimpleName(), field.getName());
         }
 
-        static Param fromParameter(Parameter parameter) {
-            return new Param(parameter.getType().getSimpleName(), parameter.getName());
+        static Parameter fromParameter(java.lang.reflect.Parameter parameter) {
+            return new Parameter(parameter.getType().getSimpleName(), parameter.getName());
         }
 
         @Override
@@ -291,7 +345,7 @@ public class App {
         }
     }
 
-    static final class SimpleField<T> {
+    static final class SimpleField {
         private final String type;
         private final String name;
         private final Field field;
@@ -304,10 +358,10 @@ public class App {
             this.object = object;
         }
 
-        static <T> SimpleField<T> fromField(Field field, Object object) {
+        static SimpleField fromField(Field field, Object object) {
             field.setAccessible(true);
             try {
-                return new SimpleField<T>(field.getType().getSimpleName(), field.getName(), object);
+                return new SimpleField(field.getType().getSimpleName(), field.getName(), field, object);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -330,17 +384,17 @@ public class App {
             return name;
         }
 
-        void setValue(T newValue) {
+        Object getValue() {
             try {
-                field.set(this.object, newValue);
+                return field.get(this.object);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        T getValue() {
+        void setValue(Object newValue) {
             try {
-                return (T) field.get(this.object);
+                field.set(this.object, newValue);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
