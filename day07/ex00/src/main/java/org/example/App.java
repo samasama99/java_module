@@ -24,21 +24,11 @@ import java.util.stream.Collectors;
  * Hello world!
  */
 public class App {
-
-    private static final Map<String, Class<?>> classes = Map.of(
-            "USER", User.class,
-            "ITEM", Item.class
+    private static final Map<String, SimpleClass> classes = Map.of(
+            "USER", SimpleClass.createNewSimpleClass(User.class),
+            "ITEM", SimpleClass.createNewSimpleClass(Item.class)
     );
-    private static final Map<String, Object> objects = new HashMap<>();
-    // supported types are String, Integer, Double, Boolean, Long
-//    static Map<Class<?>, Function<String, ?>> parsers = Map.of(
-//            Integer.class, Integer::parseInt,
-//            Long.class, Long::parseLong,
-//            Double.class, Double::parseDouble,
-//            String.class, Function.identity(),
-//            Boolean.class, Boolean::parseBoolean
-//    );
-
+    private static final Map<String, SimpleObject> objects = new HashMap<>();
     static Map<String, Function<String, ?>> parsers = Map.of(
             "INTEGER", Integer::parseInt,
             "LONG", Long::parseLong,
@@ -46,10 +36,6 @@ public class App {
             "STRING", Function.identity(),
             "BOOLEAN", Boolean::parseBoolean
     );
-
-    public static <T> T parseLine(String line, Function<String, T> parser) {
-        return parser.apply(line);
-    }
 
     static void parseCommand(String input) throws InvocationTargetException, InstantiationException, IllegalAccessException {
         String lscRegex = "lsc";
@@ -72,16 +58,11 @@ public class App {
             Matcher matcher = Pattern.compile(newClassRegex).matcher(input);
             if (matcher.find()) {
                 String className = matcher.group(1).toUpperCase();
-                Optional<Constructor<?>[]> constructors = classes.entrySet().stream()
-                        .filter((c) -> c.getKey().equals(className))
-                        .map(Map.Entry::getValue)
-                        .findFirst()
-                        .map(Class::getConstructors);
-                if (constructors.isPresent()) {
-                    Constructor<?> defaultConstructor = Arrays.stream(constructors.get()).filter(c -> c.getParameterCount() == 0).findFirst().get();
-                    Object object = defaultConstructor.newInstance();
-                    objects.put(className + object.hashCode(), object);
-                    System.out.println("New instance of class: " + className + " hash code: " + className + object.hashCode());
+                SimpleClass simpleClass = classes.get(className);
+                if (simpleClass != null) {
+                    SimpleObject simpleObject = simpleClass.newInstance();
+                    objects.put(simpleObject.objectName(), simpleObject);
+                    System.out.println("New instance of class: " + className + " hash code: " + simpleObject.objectName());
                 } else {
                     System.out.println("Failed to make instance of class: " + className + " Cause: no class with that name");
                 }
@@ -95,15 +76,14 @@ public class App {
                 } else {
                     System.out.println("no object was removed");
                 }
-            } else {
-                System.out.println("Trash");
             }
         } else if (input.matches(lsvClassRegex)) {
             Matcher matcher = Pattern.compile(lsvClassRegex).matcher(input);
             if (matcher.find()) {
                 String className = matcher.group(1).toUpperCase();
-                if (classes.containsKey(className))
-                    Arrays.stream(classes.get(className).getDeclaredFields()).map(Param::fromField).forEach(System.out::println);
+                SimpleClass simpleClass = classes.get(className);
+                if (simpleClass != null)
+                    simpleClass.params.forEach(System.out::println);
                 else System.out.println("NO");
             }
         } else if (input.matches(lsvObjectRegex)) {
@@ -111,11 +91,10 @@ public class App {
             if (matcher.find()) {
                 String className = matcher.group(1).toUpperCase();
                 if (objects.containsKey(className)) {
-
                     Object object = objects.get(className);
                     Field[] declaredFields = object.getClass().getDeclaredFields();
                     Arrays.stream(declaredFields)
-                            .map(f -> ParamWithValue.fromField(f, object)).
+                            .map(f -> SimpleField.fromField(f, object)).
                             forEach(System.out::println);
                 } else System.out.println("NO");
             }
@@ -124,13 +103,7 @@ public class App {
             if (matcher.find()) {
                 String className = matcher.group(1).toUpperCase();
                 if (classes.containsKey(className)) {
-                    Predicate<Object> isObject = Object.class::equals;
-                    Predicate<java.lang.reflect.Method> isMethodFromObject = method -> isObject.test(method.getDeclaringClass());
-                    java.lang.reflect.Method[] methods = classes.get(className).getMethods();
-                    Arrays.stream(methods)
-                            .filter(isMethodFromObject.negate())
-                            .map(Method::fromMethod)
-                            .forEach(System.out::println);
+                    classes.get(className).methods().forEach(System.out::println);
                 } else System.out.println("NO");
             }
         } else if (input.matches(callMethodRegex)) {
@@ -146,22 +119,21 @@ public class App {
                 System.out.println("Method Name: " + methodName);
                 System.out.println("Parameter: " + paramsGroup.trim());
 
-                Object object = objects.get(objectName);
+                SimpleObject object = objects.get(objectName);
                 if (object != null) {
-                    java.lang.reflect.Method[] methods = object.getClass().getMethods();
-                    Optional<java.lang.reflect.Method> methodOpt = Arrays.stream(methods).filter(m -> m.getName().toUpperCase().equals(methodName)).findFirst();
+                    Optional<Method<Object>> methodOpt = object.methods().stream().filter(m -> m.name().toUpperCase().equals(methodName)).findFirst();
                     if (methodOpt.isPresent()) {
-                        java.lang.reflect.Method method = methodOpt.get();
-                        method.setAccessible(true);
-                        Method simpleMethod = Method.fromMethod(method);
-                        String[] parsedParams = paramsGroup.split(" ");
+//                        java.lang.reflect.Method method = methodOpt.get();
+//                        method.setAccessible(true);
+                        Method<Object> simpleMethod = methodOpt.get();
                         List<Param> params = simpleMethod.params();
-                        if (params.isEmpty())
-                        {
-                            if (method.getDeclaringClass() == Void.class)
-                                method.invoke(object);
-                            else
-                                System.out.println(method.invoke(object));
+
+                        String[] parsedParams = paramsGroup.split(" ");
+                        if (params.isEmpty()) {
+                            if (simpleMethod.returnType.equals("VOID")) {
+                                simpleMethod.invoke(object);
+                            } else
+                                System.out.println(simpleMethod.invoke(object));
                         } else {
                             if (params.size() != parsedParams.length) {
                                 System.out.println("wrong number if parameters");
@@ -171,10 +143,10 @@ public class App {
                                     for (int i = 0; i < parsedParams.length; i++) {
                                         parsedValue.add(parsers.get(params.get(i).type().toUpperCase()).apply(parsedParams[i]));
                                     }
-                                    if (method.getDeclaringClass() == Void.class)
-                                        method.invoke(object, parsedValue.toArray());
+                                    if (simpleMethod.returnType.equals("VOID"))
+                                        simpleMethod.invoke(object, parsedValue.toArray());
                                     else
-                                        System.out.println(method.invoke(object, parsedValue.toArray()));
+                                        System.out.println(simpleMethod.invoke(object, parsedValue.toArray()));
                                 } catch (Exception e) {
                                     System.out.println("Wrong type of the param error: " + e.getMessage());
                                 }
@@ -198,14 +170,6 @@ public class App {
 
     }
 
-    //    static Boolean  parsePram(Class<Boolean> paramType, String value) {
-//        // supported types are String, Integer, Double, Boolean, Long
-//    }
-//    static Integer  parsePram(Class<Integer> paramType, String value) {
-//        // supported types are String, Integer, Double, Boolean, Long
-//        return (Integer) parsers.get(paramType).apply(value);
-//    }
-//
     public static void main(String[] args) {
         try (Terminal terminal = TerminalBuilder.builder().system(true).build()) {
 
@@ -226,20 +190,85 @@ public class App {
 
     }
 
-//    static private enum State {
-//        CLASS_INTRODUCTION,
-//        FIELD_INITIALIZATION,
-//        FIELD_MANIPULATION,
-//        METHOD_CALLS
-//    }
+    @FunctionalInterface
+    public interface VarArgFunction<R> {
+        R invoke(Object... args);
+    }
 
+    record SimpleClass(String name, Constructor<?> constructor, List<Param> params, List<Method<Object>> methods,
+                       Class<?> originalClass) {
+        static private final Predicate<Object> isObject = Object.class::equals;
+        static private final Predicate<java.lang.reflect.Method> isMethodFromObject = method -> isObject.test(method.getDeclaringClass());
 
-    record Method(String name, String returnType, List<Param> params) {
-        static Method fromMethod(java.lang.reflect.Method method) {
+        static public SimpleClass createNewSimpleClass(Class<?> c) {
+            String name = c.getSimpleName();
+
+            List<Param> params = Arrays.stream(c.getDeclaredFields()).map(Param::fromField).toList();
+
+            int numberOfParams = params.size();
+
+            Constructor<?> parameterizedConstructor = Arrays.stream(c.getConstructors())
+//                    .filter(constructor -> constructor.getParameterCount() == numberOfParams)
+                    .filter(constructor -> constructor.getParameterCount() == 0)
+                    .findFirst()
+                    .orElseThrow(NoParameterizedConstructor::new);
+
+            List<Method<Object>> methods = Arrays.stream(c.getMethods())
+                    .filter(isMethodFromObject.negate())
+                    .map((m) -> Method.fromMethod(m, null))
+                    .toList();
+
+            return new SimpleClass(name, parameterizedConstructor, params, methods, c);
+        }
+
+        SimpleObject newInstance() {
+            try {
+                Object object = constructor.newInstance();
+                List<Method<Object>> methods = Arrays.stream(originalClass.getMethods())
+                        .filter(isMethodFromObject.negate())
+                        .map((m) -> Method.fromMethod(m, object))
+                        .toList();
+                return new SimpleObject(this, name.toUpperCase() + object.hashCode(), object, methods);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        static public class NoParameterizedConstructor extends RuntimeException {
+            public NoParameterizedConstructor() {
+                super();
+            }
+        }
+    }
+
+    record SimpleObject(SimpleClass simpleClass, String objectName, Object object, List<Method<Object>> methods) {
+
+    }
+
+    @FunctionalInterface
+    interface SimpleMethodInterface<R> {
+        R invoke(Object... args);
+    }
+
+    record Method<R>(String name, String returnType, List<Param> params,
+                     VarArgFunction<R> invokable) implements SimpleMethodInterface {
+        static <R> Method<R> fromMethod(java.lang.reflect.Method method, Object object) {
             Parameter[] parameters = method.getParameters();
             List<Param> list = Arrays.stream(parameters).map(Param::fromParameter).toList();
-            return new Method(method.getName(), method.getReturnType().getSimpleName(), list);
+            return new Method<>(method.getName(), method.getReturnType().getSimpleName(), list, (Object... args) -> {
+                try {
+                    return (R) method.invoke(object, args);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
         }
+
+        @Override
+        public R invoke(Object... args) {
+            return invokable.invoke(args);
+        }
+
 
         @Override
         public String toString() {
@@ -262,12 +291,23 @@ public class App {
         }
     }
 
-    record ParamWithValue<T>(String type, String name, T value) {
-        static <T> ParamWithValue<T> fromField(Field field, Object object) {
+    static final class SimpleField<T> {
+        private final String type;
+        private final String name;
+        private final Field field;
+        private final Object object;
+
+        private SimpleField(String type, String name, Field field, Object object) {
+            this.type = type;
+            this.name = name;
+            this.field = field;
+            this.object = object;
+        }
+
+        static <T> SimpleField<T> fromField(Field field, Object object) {
             field.setAccessible(true);
             try {
-
-                return new ParamWithValue<T>(field.getType().getSimpleName(), field.getName(), (T) field.get(object));
+                return new SimpleField<T>(field.getType().getSimpleName(), field.getName(), object);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -275,7 +315,36 @@ public class App {
 
         @Override
         public String toString() {
-            return name + " : " + type + " == " + value;
+            try {
+                return name + " : " + type + " == " + field.get(object);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
         }
+
+        public String type() {
+            return type;
+        }
+
+        public String name() {
+            return name;
+        }
+
+        void setValue(T newValue) {
+            try {
+                field.set(this.object, newValue);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        T getValue() {
+            try {
+                return (T) field.get(this.object);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
     }
 }
