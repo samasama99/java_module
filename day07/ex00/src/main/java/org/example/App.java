@@ -43,12 +43,25 @@ public class App {
         String lsvObjectRegex = "list fields\\s+(\\w+)";
         String callMethodRegex = "call\\s+(\\w+)\\s+(\\w+)(\\s+([\\S\\s]+))*";
         String rmObjectRegex = "remove\\s+(\\w+)";
+        String infoObjectRegex = "info\\s+(\\w+)";
 
 
         if (input.matches(lscRegex)) {
-            classes.keySet().forEach(System.out::println);
+            classes.values().stream().map(c -> c.name + Arrays.stream(c.constructor().getParameters()).map(p -> p.getName() + " : " + p.getType().getSimpleName()).collect(Collectors.joining(" , ", "( ", " )"))).forEach(System.out::println);
         } else if (input.matches(lsoRegex)) {
             objects.keySet().forEach(System.out::println);
+        } else if (input.matches(infoObjectRegex)) {
+            Matcher matcher = Pattern.compile(infoObjectRegex).matcher(input);
+            if (matcher.find()) {
+                String group = matcher.group(1);
+                String className = group == null ? null : group.toUpperCase();
+                SimpleClass simpleClass = classes.get(className);
+                if (simpleClass != null) {
+                    System.out.println(simpleClass);
+                } else {
+                    System.out.println("no class is found with this name `" + className + "`");
+                }
+            }
         } else if (input.matches(newClassRegex)) {
             Matcher matcher = Pattern.compile(newClassRegex).matcher(input);
             if (matcher.find()) {
@@ -67,7 +80,6 @@ public class App {
 //                    System.out.println(Arrays.toString(simpleClass.constructor.getDeclaredAnnotations()));
 //                    System.out.println(Arrays.toString(simpleClass.constructor.getParameters()));
 //                    Arrays.stream(simpleClass.getClass().getFields()).forEach(System.out::println);
-
 
 
                     Object[] args = new Object[simpleClass.constructor().getParameterCount()];
@@ -197,38 +209,26 @@ public class App {
     }
 
     public static void main(String[] args) {
-//        try (Terminal terminal = TerminalBuilder.builder().system(true).build()) {
-//
-//            LineReader lineReader = LineReaderBuilder.builder().terminal(terminal).build();
-//
-//            while (true) {
-//                System.out.print("-> ");
-//                String line = lineReader.readLine().strip();
-//                if (line.isBlank()) continue;
-//                if (line.equalsIgnoreCase("BREAK")) break;
-//                parseCommand(line);
-//            }
-//        } catch (IOException | InvocationTargetException | InstantiationException |
-//                 IllegalAccessException e) {
-//            System.out.println(e.getMessage());
-//        } catch (EndOfFileException e) {
-//            System.out.println("Ctrl-D was pressed, Exiting.");
-//        }
         {
-            Class<Item> myClass = Item.class;
-            System.out.println(myClass);
-            Constructor<Item> constructor = null;
-            try {
-                constructor = myClass.getDeclaredConstructor(String.class, double.class);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
-
-            java.lang.reflect.Parameter[] parameters = constructor.getParameters();
-            for (java.lang.reflect.Parameter parameter : parameters) {
-                System.out.println("Parameter Name: " + parameter.getName());
-            }
         }
+        try (Terminal terminal = TerminalBuilder.builder().system(true).build()) {
+
+            LineReader lineReader = LineReaderBuilder.builder().terminal(terminal).build();
+
+            while (true) {
+                System.out.print("-> ");
+                String line = lineReader.readLine().strip();
+                if (line.isBlank()) continue;
+                if (line.equalsIgnoreCase("BREAK")) break;
+                parseCommand(line);
+            }
+        } catch (IOException | InvocationTargetException | InstantiationException |
+                 IllegalAccessException e) {
+            System.out.println(e.getMessage());
+        } catch (EndOfFileException e) {
+            System.out.println("Ctrl-D was pressed, Exiting.");
+        }
+//
 
     }
 
@@ -288,6 +288,7 @@ public class App {
                 throw new RuntimeException(e);
             }
         }
+
 
         static public class NoParameterizedConstructor extends RuntimeException {
             public NoParameterizedConstructor() {
