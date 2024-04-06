@@ -1,8 +1,8 @@
 package org.example.item;
 
 public class Item {
-    String name;
-    double price;
+    private String name;
+    private double price;
 
     public Item() {
     }
@@ -12,7 +12,6 @@ public class Item {
         this.price = price;
     }
 
-    // per between 0 and 1
     public double calculateAfterDiscountPrice(double per) {
         return price - (price * per);
     }

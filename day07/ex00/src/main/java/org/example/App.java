@@ -5,6 +5,7 @@ import org.example.user.User;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.impl.history.DefaultHistory;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
@@ -27,6 +28,7 @@ public class App {
     );
     private static final Map<String, SimpleObject> objects = new HashMap<>();
     static Map<String, Function<String, ?>> parsers = Map.of(
+            "INT", Integer::parseInt,
             "INTEGER", Integer::parseInt,
             "LONG", Long::parseLong,
             "DOUBLE", Double::parseDouble,
@@ -37,13 +39,13 @@ public class App {
     static void parseCommand(String input) throws InvocationTargetException, InstantiationException, IllegalAccessException {
         String lscRegex = "list classes";
         String lsoRegex = "list objects";
-        String newClassRegex = "new\\s+(\\w+)(\\s+([\\S\\s]+))*";
-        String editObjectRegex = "edit\\s+(\\w+)\\s+(\\w+)\\s+(\\w+)";
         String lsmRegex = "list methods\\s+(\\w+)";
         String lsvObjectRegex = "list fields\\s+(\\w+)";
-        String callMethodRegex = "call\\s+(\\w+)\\s+(\\w+)(\\s+([\\S\\s]+))*";
         String rmObjectRegex = "remove\\s+(\\w+)";
         String infoObjectRegex = "info\\s+(\\w+)";
+        String newClassRegex = "new\\s+(\\w+)(\\s+([\\S\\s]+))*";
+        String editObjectRegex = "edit\\s+(\\w+)\\s+(\\w+)\\s+(\\w+)";
+        String callMethodRegex = "call\\s+(\\w+)\\s+(\\w+)(\\s+([\\S\\s]+))*";
 
 
         if (input.matches(lscRegex)) {
@@ -71,17 +73,6 @@ public class App {
                 SimpleClass simpleClass = classes.get(className);
 
                 if (simpleClass != null) {
-//                    System.out.println(Arrays.toString(simpleClass.constructor.getTypeParameters()));
-//                    System.out.println(Arrays.toString(simpleClass.constructor.getParameterTypes()));
-//                    System.out.println(Arrays.toString(simpleClass.constructor.getGenericParameterTypes()));
-//                    System.out.println(Arrays.deepToString(simpleClass.constructor.getParameterAnnotations()));
-//                    System.out.println(simpleClass.constructor.getModifiers());
-//                    System.out.println(Arrays.toString(simpleClass.constructor.getAnnotations()));
-//                    System.out.println(Arrays.toString(simpleClass.constructor.getDeclaredAnnotations()));
-//                    System.out.println(Arrays.toString(simpleClass.constructor.getParameters()));
-//                    Arrays.stream(simpleClass.getClass().getFields()).forEach(System.out::println);
-
-
                     Object[] args = new Object[simpleClass.constructor().getParameterCount()];
                     String[] parameters = paramsGroup.split(" ");
                     if (parameters.length != args.length) {
@@ -90,6 +81,7 @@ public class App {
                     }
                     int index = 0;
                     for (var type : simpleClass.constructor().getParameterTypes()) {
+                        System.out.println(type.getSimpleName().toUpperCase());
                         args[index] = parsers.get(type.getSimpleName().toUpperCase()).apply(parameters[index]);
                         index++;
                     }
@@ -209,11 +201,12 @@ public class App {
     }
 
     public static void main(String[] args) {
-        {
-        }
         try (Terminal terminal = TerminalBuilder.builder().system(true).build()) {
 
             LineReader lineReader = LineReaderBuilder.builder().terminal(terminal).build();
+            DefaultHistory history = new DefaultHistory();
+            history.attach(lineReader);
+
 
             while (true) {
                 System.out.print("-> ");
@@ -221,6 +214,7 @@ public class App {
                 if (line.isBlank()) continue;
                 if (line.equalsIgnoreCase("BREAK")) break;
                 parseCommand(line);
+                history.add(line);
             }
         } catch (IOException | InvocationTargetException | InstantiationException |
                  IllegalAccessException e) {
@@ -228,8 +222,6 @@ public class App {
         } catch (EndOfFileException e) {
             System.out.println("Ctrl-D was pressed, Exiting.");
         }
-//
-
     }
 
     @FunctionalInterface
@@ -257,9 +249,8 @@ public class App {
 
             Constructor<?> parameterizedConstructor = Arrays.stream(c.getConstructors())
                     .filter(constructor -> constructor.getParameterCount() == numberOfParams)
-//                    .filter(constructor -> constructor.getParameterCount() == 0)
                     .findFirst()
-                    .orElseThrow(NoParameterizedConstructor::new);
+                    .orElseThrow(NoValidParameterizedConstructor::new);
 
             return new SimpleClass(name, parameterizedConstructor, c);
         }
@@ -290,8 +281,8 @@ public class App {
         }
 
 
-        static public class NoParameterizedConstructor extends RuntimeException {
-            public NoParameterizedConstructor() {
+        static public class NoValidParameterizedConstructor extends RuntimeException {
+            public NoValidParameterizedConstructor() {
                 super();
             }
         }
@@ -351,8 +342,8 @@ public class App {
 
         static SimpleMethod fromMethod(Method method, Object object) {
             java.lang.reflect.Parameter[] parameters = method.getParameters();
-            List<Parameter> list = Arrays.stream(parameters).map(Parameter::fromParameter).toList();
-            return new SimpleMethod(method.getName(), method.getReturnType().getSimpleName(), list, (Object... args) -> {
+            List<Parameter> parameterList = Arrays.stream(parameters).map(Parameter::fromParameter).toList();
+            return new SimpleMethod(method.getName(), method.getReturnType().getSimpleName(), parameterList, (Object... args) -> {
                 try {
                     return method.invoke(object, args);
                 } catch (Exception e) {
