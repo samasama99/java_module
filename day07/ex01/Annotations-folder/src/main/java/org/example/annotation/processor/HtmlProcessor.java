@@ -27,7 +27,7 @@ public class HtmlProcessor extends AbstractProcessor {
         try {
             for (Element element : roundEnv.getElementsAnnotatedWith(HtmlForm.class)) {
                 HtmlForm htmlForm = element.getAnnotation(HtmlForm.class);
-                String fileName = htmlForm.fileName();
+                String fileName = htmlForm.fileName()
 
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "generating form: " + fileName);
 
