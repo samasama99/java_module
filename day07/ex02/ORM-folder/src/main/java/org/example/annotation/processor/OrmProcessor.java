@@ -106,7 +106,7 @@ public class OrmProcessor extends AbstractProcessor {
     String generateSelectById(Element element) {
         StringBuilder stringBuilder = new StringBuilder();
         OrmEntity entity = element.getAnnotation(OrmEntity.class);
-        stringBuilder.append("SELECT * FROM ").append(entity.table()).append(" WHERE id = ?;\n");
+        stringBuilder.append("SELECT * FROM ").append(entity.table()).append(" WHERE id = ?;");
         return stringBuilder.toString();
     }
 
@@ -173,17 +173,44 @@ public class OrmProcessor extends AbstractProcessor {
             writer.println("package " + packageName + ";");
             writer.println();
             writer.println("import " + fullClassName + ";");
+            writer.println("import org.springframework.jdbc.core.RowMapper;");
+            writer.println("import java.lang.reflect.Field;");
+            writer.println("import java.sql.ResultSet;");
+            writer.println("import java.sql.SQLException;");
+            writer.println("import org.example.annotation.processor.OrmColumn;");
+            writer.println("import org.springframework.jdbc.core.JdbcTemplate;");
+            writer.println("import org.springframework.dao.EmptyResultDataAccessException;");
+            writer.println(" import java.util.Optional;");
+
             writer.println();
             writer.println("public class " + repositoryName + " {");
+
+            writer.println("JdbcTemplate jdbcTemplate;");
+            writer.println("RowMapper<" + className + "> rowMapper;");
+            writer.println("");
+            writer.println(className + "Repository(JdbcTemplate jdbcTemplate) {");
+            writer.println("    this.jdbcTemplate = jdbcTemplate;");
+            writer.println("    rowMapper = new " + className + "RowMapper();");
+
+            writer.println("}\n");
             writer.println();
             writer.println("    public void save(" + className + " " + className.toLowerCase() + ") {");
             writer.println("        System.out.println(\"HELLO FROM SAVE\");");
             writer.println("    }");
             writer.println();
-            writer.println("    public " + className + " selectById(Long id) {");
-            writer.println("        System.out.println(\"HELLO FROM SELECT\");");
-            writer.println("        return null;");
+
+            writer.println("public Optional<" + className + "> findById(Long id) {");
+            writer.println("    final String SQL = \"" + generateSelectById(element) + "\";");
+            writer.println("    " + className + " tmp;");
+            writer.println("    try {");
+            writer.println("        tmp = this.jdbcTemplate.queryForObject(SQL, rowMapper, id);");
+            writer.println("    } catch (EmptyResultDataAccessException e) {");
+            writer.println("        return Optional.empty();");
             writer.println("    }");
+            writer.println("    if (tmp == null)");
+            writer.println("        return Optional.empty();");
+            writer.println("    return Optional.of(tmp);");
+            writer.println("}\n");
             writer.println();
             writer.println("    public void update(" + className + " " + className.toLowerCase() + ") {");
             writer.println("        System.out.println(\"HELLO FROM UPDATE\");");
@@ -200,17 +227,9 @@ public class OrmProcessor extends AbstractProcessor {
         return "static class " + className + "RowMapper implements RowMapper<" + className + "> {\n" +
                 "    @Override\n" +
                 "    public " + className + " mapRow(ResultSet rs, int rowNum) throws SQLException {\n" +
-                "        " + className + " tmp = new Product();" +
-                "public class " + className + "RowMapper<T> implements RowMapper<T> {\n\n" +
-                "    private final Class<T> mappedClass;\n\n" +
-                "    public " + className + "(Class<T> mappedClass) {\n" +
-                "        this.mappedClass = mappedClass;\n" +
-                "    }\n\n" +
-                "    @Override\n" +
-                "    public T mapRow(ResultSet rs, int rowNum) throws SQLException {\n" +
                 "        try {\n" +
-                "            T instance = mappedClass.getDeclaredConstructor().newInstance();\n" +
-                "            for (Field field : mappedClass.getDeclaredFields()) {\n" +
+                "           " + className + " instance = " + className + ".class.getDeclaredConstructor().newInstance();\n" +
+                "            for (Field field : " + className + ".class.getDeclaredFields()) {\n" +
                 "                if (field.isAnnotationPresent(OrmColumn.class)) {\n" +
                 "                    OrmColumn ormColumnAnnotation = field.getAnnotation(OrmColumn.class);\n" +
                 "                    String columnName = ormColumnAnnotation.name();\n" +
