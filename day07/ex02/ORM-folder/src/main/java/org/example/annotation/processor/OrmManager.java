@@ -20,10 +20,18 @@ public class OrmManager {
     JdbcTemplate jdbcTemplate;
     private static final Logger LOGGER = LoggerFactory.getLogger(OrmManager.class);
 
-    public OrmManager(DataSource dataSource, Set<Class<?>> classes) {
+    public OrmManager(DataSource dataSource, Set<Class<?>> registerClasses) {
         this.jdbcTemplate = new JdbcTemplateLogDecorator(dataSource, LOGGER);
-        classes.stream().map(OrmManager::generateDroppingSqlQuery).forEach(this.jdbcTemplate::execute);
-        classes.stream().map(OrmManager::generateCreationSqlQuery).forEach(this.jdbcTemplate::execute);
+
+        for (Class<?> annotatedClass : registerClasses) {
+//            System.out.println("Initializing: " + annotatedClass.getName());
+            boolean annotationPresent = annotatedClass.isAnnotationPresent(OrmEntity.class);
+            if (!annotationPresent) {
+                throw new RuntimeException(annotatedClass.getSimpleName() + " is not a table");
+            }
+        }
+        registerClasses.stream().map(OrmManager::generateDroppingSqlQuery).forEach(this.jdbcTemplate::execute);
+        registerClasses.stream().map(OrmManager::generateCreationSqlQuery).forEach(this.jdbcTemplate::execute);
     }
 
     static String generateSelectById(Long id, Class<?> aClass) {
@@ -78,7 +86,6 @@ public class OrmManager {
                 }
             }
         }
-        // Remove the trailing comma and newline
         stringBuilder.deleteCharAt(stringBuilder.length() - 2);
         stringBuilder.append(");\n");
         return stringBuilder.toString();
@@ -116,14 +123,6 @@ public class OrmManager {
         return stringBuilder.toString();
     }
 
-//    UPDATE "User" SET -- Added SET before column updates
-//    firstName = ?,
-//    lastName = ?,
-//    password = ?,
-//    age = ?,
-//    money = ? -- Assuming money is a column in the table
-//    WHERE id = ?;
-
     record Pair<T, U>(T left, U right) {
     }
 
@@ -138,8 +137,8 @@ public class OrmManager {
         String id = null;
         for (Field field : aClass.getDeclaredFields()) {
             OrmColumn ormColumn = field.getAnnotation(OrmColumn.class);
+            field.setAccessible(true);
             if (ormColumn != null) {
-                field.setAccessible(true);
                 if (field.getType() == String.class) {
                     String value = null;
                     try {
@@ -152,7 +151,6 @@ public class OrmManager {
                     columnNamesAndValues.add(new Pair<>(ormColumn.name(), field.get(entity).toString()));
                 }
             } else {
-                field.setAccessible(true);
                 id = field.get(entity).toString();
             }
         }
@@ -160,7 +158,7 @@ public class OrmManager {
 
         stringBuilder.append(columnNamesAndValues.stream().map(n -> n.left + " = " + n.right).collect(Collectors.joining(",\n"))).append("\n");
         stringBuilder.append("WHERE id = ").append(id).append(";");
-        System.out.println("KILL ME " + stringBuilder);
+//        System.out.println("KILL ME " + stringBuilder);
         return stringBuilder.toString();
     }
 
@@ -183,7 +181,7 @@ public class OrmManager {
     public void save(Object entity) {
         try {
             String SQL_INSERT = generateInsertionSqlQuery(entity.getClass(), entity);
-            System.out.println("THE RETURN IS: " + this.jdbcTemplate.update(SQL_INSERT));
+            this.jdbcTemplate.update(SQL_INSERT);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
@@ -192,7 +190,7 @@ public class OrmManager {
     public void update(Object entity) {
         try {
             String SQL_INSERT = generateUpdateSqlQuery(entity.getClass(), entity);
-            System.out.println("THE RETURN IS: " + this.jdbcTemplate.update(SQL_INSERT));
+            this.jdbcTemplate.update(SQL_INSERT);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
@@ -209,31 +207,31 @@ public class OrmManager {
 
         @Override
         public T mapRow(ResultSet rs, int rowNum) throws SQLException {
-            System.out.println("MAPPING !!!!");
+//            System.out.println("MAPPING !!!!");
             try {
-                System.out.println("CONSTRUCTOR ??");
+//                System.out.println("CONSTRUCTOR ??");
                 T instance = mappedClass.getDeclaredConstructor().newInstance();
-                System.out.println("CONSTRUCTOR HUH ??");
+//                System.out.println("CONSTRUCTOR HUH ??");
                 for (Field field : mappedClass.getDeclaredFields()) {
                     if (field.isAnnotationPresent(OrmColumnId.class)) {
-                        System.out.println("IS THIS ID ??");
+//                        System.out.println("IS THIS ID ??");
                         Object value = rs.getObject("id");
-                        System.out.println("PROBABLY");
-                        System.out.println(value);
+//                        System.out.println("PROBABLY");
+//                        System.out.println(value);
                         field.setAccessible(true);
                         field.set(instance, value);
-                        System.out.println("ID WORKING");
+//                        System.out.println("ID WORKING");
                     }
                     if (field.isAnnotationPresent(OrmColumn.class)) {
-                        System.out.println("IS THIS COLUMN ??");
+//                        System.out.println("IS THIS COLUMN ??");
                         OrmColumn ormColumnAnnotation = field.getAnnotation(OrmColumn.class);
                         String columnName = ormColumnAnnotation.name();
-                        System.out.println("PROBABLY");
+//                        System.out.println("PROBABLY");
                         Object value = rs.getObject(columnName);
-                        System.out.println(value);
+//                        System.out.println(value);
                         field.setAccessible(true);
                         field.set(instance, value);
-                        System.out.println("COLUMN WORKING");
+//                        System.out.println("COLUMN WORKING");
                     }
                 }
                 return instance;

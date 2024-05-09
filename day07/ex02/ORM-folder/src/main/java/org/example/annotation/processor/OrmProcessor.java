@@ -14,86 +14,60 @@ import java.util.Set;
 
 
 @SupportedAnnotationTypes({
-        "org.example.annotation.processor.OrmEntity",
-        "org.example.annotation.processor.OrmColumn",
-        "org.example.annotation.processor.OrmColumnId"
+        "org.example.annotation.processor.OrmEntity"
 })
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
 @AutoService(Processor.class)
 public class OrmProcessor extends AbstractProcessor {
 
-    @Override
-    public synchronized void init(ProcessingEnvironment processingEnv) {
-        super.init(processingEnv);
-    }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        System.out.println("IS THIS WORKING ?????");
-        Set<? extends Element> annotatedElements = roundEnv.getElementsAnnotatedWith(OrmEntity.class);
+//        System.out.println("---------------------");
+//        System.out.println("ANNOTATIONS SET: ");
+//        annotations.forEach(System.out::println);
+//        System.out.println("---------------------");
+//        Set<? extends Element> annotatedElements = roundEnv.getElementsAnnotatedWith(OrmEntity.class);
+//
+//        Set<String> ormEntityClasses = new HashSet<>();
+//
+//        for (Element element : annotatedElements) {
+//
+//            ormEntityClasses.add(element.getClass().getName());
+////            if (element instanceof TypeElement typeElement) {
+////                ormEntityClasses.add(typeElement.getQualifiedName().toString());
+////            }
+//        }
+//
+//        generateSourceFile(ormEntityClasses);
 
-        // Set to store names of classes with @OrmEntity annotation
-        Set<String> ormEntityClasses = new HashSet<>();
-
-        for (Element element : annotatedElements) {
-            // Ensure the annotated element is a class
-            if (element instanceof TypeElement typeElement) {
-                ormEntityClasses.add(typeElement.getQualifiedName().toString());
-            }
-        }
-
-        // Generate source file with the list of ormEntityClasses
-        generateSourceFile(ormEntityClasses);
-
-        // We have processed the annotations, so return true to indicate that they have been consumed
         return true;
     }
 
-    private void generateSourceFile(Set<String> ormEntityClasses) {
-        try {
-            // Create a source file
-            JavaFileObject sourceFile = processingEnv.getFiler().createSourceFile("org.example.App." + "OrmEntityClasses");
-
-            // Create a PrintWriter for writing to the source file
-            PrintWriter writer = new PrintWriter(sourceFile.openWriter());
-
-            // Write the package declaration
-            writer.println("package com.example.generated;");
-            writer.println();
-
-            // Write the imports
-            writer.println("import java.util.Set;");
-            writer.println("import java.util.HashSet;");
-            writer.println();
-
-            // Write the class definition
-            writer.println("public class OrmEntityClasses {");
-            writer.println();
-
-            // Write the method to get the set of ormEntityClasses
-            writer.println("    public static Set<Class<?>> getOrmEntityClasses() {");
-            writer.println("        Set<Class<?>> classes = new HashSet<>();");
-            for (String className : ormEntityClasses) {
-//                writer.println("        classes.add(\"" + className + ".class\");");
-                writer.println("        classes.add(" + className + ".class);");
-            }
-            writer.println("        return classes;");
-            writer.println("    }");
-            writer.println("}");
-
-            // Close the writer
-            writer.close();
-        } catch (IOException e) {
-//            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public Set<String> getSupportedAnnotationTypes() {
-        Set<String> annotations = new HashSet<>();
-        annotations.add(OrmEntity.class.getCanonicalName());
-        return annotations;
-    }
+//    private void generateSourceFile(Set<String> ormEntityClasses) {
+//        try {
+//            JavaFileObject sourceFile = processingEnv.getFiler().createSourceFile("OrmEntityClasses");
+//            PrintWriter writer = new PrintWriter(sourceFile.openWriter());
+//            writer.println("package com.example.generated;");
+//            writer.println();
+//            writer.println("import java.util.Set;");
+//            writer.println("import java.util.HashSet;");
+//            writer.println();
+//            writer.println("public class OrmEntityClasses {");
+//            writer.println();
+//            writer.println("    public static Set<Class<?>> getOrmEntityClasses() {");
+//            writer.println("        Set<Class<?>> classes = new HashSet<>();");
+//            for (String className : ormEntityClasses) {
+//                writer.println("        classes.add(" + className + ".class);");
+//            }
+//            writer.println("        return classes;");
+//            writer.println("    }");
+//            writer.println("}");
+//            writer.close();
+//        } catch (IOException e) {
+////            e.printStackTrace();
+//        }
+//    }
 }
 
 
