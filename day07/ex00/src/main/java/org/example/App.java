@@ -26,7 +26,9 @@ public class App {
             "USER", SimpleClass.createNewSimpleClass(User.class),
             "ITEM", SimpleClass.createNewSimpleClass(Item.class)
     );
+
     private static final Map<String, SimpleObject> objects = new HashMap<>();
+
     static Map<String, Function<String, ?>> parsers = Map.of(
             "INT", Integer::parseInt,
             "INTEGER", Integer::parseInt,
@@ -81,7 +83,7 @@ public class App {
                     }
                     int index = 0;
                     for (var type : simpleClass.constructor().getParameterTypes()) {
-                        System.out.println(type.getSimpleName().toUpperCase());
+//                        System.out.println(type.getSimpleName().toUpperCase());
                         args[index] = parsers.get(type.getSimpleName().toUpperCase()).apply(parameters[index]);
                         index++;
                     }
@@ -237,8 +239,10 @@ public class App {
     record SimpleClass(String name,
                        Constructor<?> constructor,
                        Class<?> originalClass) {
-        static private final Predicate<Object> isObject = Object.class::equals;
-        static private final Predicate<java.lang.reflect.Method> isMethodFromObject = method -> isObject.test(method.getDeclaringClass());
+//        static private final Predicate<Object> isObject = Object.class::equals;
+//        static private final Predicate<java.lang.reflect.Method> isMethodFromObject = method -> isObject.test(method.getDeclaringClass());
+        static private final Predicate<java.lang.reflect.Method> isInheritedFromObject = method -> method.getDeclaringClass() == Object.class;
+
 
         static public SimpleClass createNewSimpleClass(Class<?> c) {
             String name = c.getSimpleName();
@@ -258,14 +262,16 @@ public class App {
         SimpleObject newInstance(Object... args) {
             try {
                 Object object = constructor.newInstance(args);
+
                 Map<String, SimpleMethod> simpleMethods = Arrays
                         .stream(originalClass.getMethods())
-                        .filter(isMethodFromObject.negate())
+                        .filter(isInheritedFromObject.negate())
                         .map((m) -> SimpleMethod.fromMethod(m, object))
                         .collect(Collectors.toMap(
                                 (method) -> method.name().toUpperCase(),
                                 Function.identity()
                         ));
+
                 Map<String, SimpleField> simpleFields = Arrays
                         .stream(originalClass.getDeclaredFields())
                         .map((f) -> SimpleField.fromField(f, object))
