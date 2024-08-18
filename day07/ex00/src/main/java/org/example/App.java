@@ -34,9 +34,6 @@ public class App {
     );
 
     static void parseCommand(String input) throws InvocationTargetException, InstantiationException, IllegalAccessException {
-        String infoObject = "object\\s+(\\w+)";
-        String rmObject = "rm\\s+(\\w+)";
-        String newClass = "new\\s+(\\w+)(\\s+([\\S\\s]+))*";
         String editObject = "edit\\s+(\\w+)\\s+(\\w+)\\s+(\\w+)";
         String callMethod = "call\\s+(\\w+)\\s+(\\w+)(\\s+([\\S\\s]+))*";
 
@@ -74,48 +71,40 @@ public class App {
             return;
         }
 
-        if (input.matches(newClass)) {
-            Matcher matcher = Pattern.compile(newClass).matcher(input);
-            if (matcher.find()) {
-                String className = matcher.group(1).toUpperCase();
-                String group = matcher.group(3);
-                String paramsGroup = group == null ? null : group.trim();
-                SimpleClass simpleClass = classes.get(className);
-
-                if (simpleClass != null) {
-                    Object[] args = new Object[simpleClass.constructor().getParameterCount()];
-                    assert paramsGroup != null;
-                    String[] parameters = paramsGroup.split(" ");
-                    if (parameters.length != args.length) {
-                        System.out.println("not enough arguments for the constructor");
-                        return;
-                    }
-                    int index = 0;
-                    for (var type : simpleClass.constructor().getParameterTypes()) {
-                        System.out.println(type);
-                        args[index] = parsers.get(type).apply(parameters[index]);
-                        index++;
-                    }
-                    SimpleObject simpleObject = simpleClass.newInstance(args);
-                    objects.put(simpleObject.objectName(), simpleObject);
-                    System.out.println("New instance of class: " + className + " hash code: " + simpleObject.objectName());
-                } else {
-                    System.out.println("Failed to make instance of class: " + className + " Cause: no class with that name");
-                }
+        if (input.toLowerCase().startsWith("remove ")) {
+            String tmp = input.split(" ")[1];
+            String objectName = tmp == null ? null : tmp.trim().toUpperCase();
+            if (objects.remove(objectName) != null) {
+                System.out.println(objectName + " was removed");
+            } else {
+                System.out.println("no object was removed");
             }
             return;
         }
 
-        if (input.matches(rmObject)) {
-            Matcher matcher = Pattern.compile(rmObject).matcher(input);
-            if (matcher.find()) {
-                String group = matcher.group(1);
-                String objectName = group == null ? null : group.toUpperCase();
-                if (objects.remove(objectName) != null) {
-                    System.out.println(objectName + " was removed");
-                } else {
-                    System.out.println("no object was removed");
+        if (input.toLowerCase().startsWith("new ")) {
+            String[] s = input.split(" ");
+            String tmp = s[1];
+            String className = tmp == null ? null : tmp.trim().toUpperCase();
+            SimpleClass simpleClass = classes.get(className);
+
+            if (simpleClass != null) {
+                int parameterCount = simpleClass.constructor().getParameterCount();
+                Object[] args = new Object[parameterCount];
+                if (s.length != parameterCount + 2) {
+                    System.out.println("not enough arguments for the constructor");
+                    return;
                 }
+                int index = 0;
+                for (var type : simpleClass.constructor().getParameterTypes()) {
+                    args[index] = parsers.get(type).apply(s[index + 2]);
+                    index++;
+                }
+                SimpleObject simpleObject = simpleClass.newInstance(args);
+                objects.put(simpleObject.objectName(), simpleObject);
+                System.out.println("New instance of class: " + className + " hash code: " + simpleObject.objectName());
+            } else {
+                System.out.println("Failed to make instance of class: " + className + " Cause: no class with that name");
             }
             return;
         }
