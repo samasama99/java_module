@@ -39,12 +39,11 @@ public class App {
     );
 
     static void parseCommand(String input) throws InvocationTargetException, InstantiationException, IllegalAccessException {
-        String lscRegex = "list classes";
-        String lsoRegex = "list objects";
-        String lsmRegex = "list methods\\s+(\\w+)";
-        String lsvObjectRegex = "list fields\\s+(\\w+)";
-        String rmObjectRegex = "remove\\s+(\\w+)";
-        String infoObjectRegex = "info\\s+(\\w+)";
+        String lscRegex = "lsc";
+        String lsoRegex = "lso";
+        String infoObjectRegex = "io\\s+(\\w+)";
+        String rmObjectRegex = "rm\\s+(\\w+)";
+        String infoClassRegex = "ic\\s+(\\w+)";
         String newClassRegex = "new\\s+(\\w+)(\\s+([\\S\\s]+))*";
         String editObjectRegex = "edit\\s+(\\w+)\\s+(\\w+)\\s+(\\w+)";
         String callMethodRegex = "call\\s+(\\w+)\\s+(\\w+)(\\s+([\\S\\s]+))*";
@@ -54,8 +53,8 @@ public class App {
             classes.values().stream().map(c -> c.name + Arrays.stream(c.constructor().getParameters()).map(p -> p.getName() + " : " + p.getType().getSimpleName()).collect(Collectors.joining(" , ", "( ", " )"))).forEach(System.out::println);
         } else if (input.matches(lsoRegex)) {
             objects.keySet().forEach(System.out::println);
-        } else if (input.matches(infoObjectRegex)) {
-            Matcher matcher = Pattern.compile(infoObjectRegex).matcher(input);
+        } else if (input.matches(infoClassRegex)) {
+            Matcher matcher = Pattern.compile(infoClassRegex).matcher(input);
             if (matcher.find()) {
                 String group = matcher.group(1);
                 String className = group == null ? null : group.toUpperCase();
@@ -105,20 +104,13 @@ public class App {
                     System.out.println("no object was removed");
                 }
             }
-        } else if (input.matches(lsvObjectRegex)) {
-            Matcher matcher = Pattern.compile(lsvObjectRegex).matcher(input);
+        } else if (input.matches(infoObjectRegex)) {
+            Matcher matcher = Pattern.compile(infoObjectRegex).matcher(input);
             if (matcher.find()) {
                 String className = matcher.group(1).toUpperCase();
                 if (objects.containsKey(className)) {
                     SimpleObject object = objects.get(className);
                     object.simpleFields.values().forEach(System.out::println);
-                } else System.out.println("NO");
-            }
-        } else if (input.matches(lsmRegex)) {
-            Matcher matcher = Pattern.compile(lsmRegex).matcher(input);
-            if (matcher.find()) {
-                String className = matcher.group(1).toUpperCase();
-                if (objects.containsKey(className)) {
                     objects.get(className).simpleMethods().values().forEach(System.out::println);
                 } else System.out.println("NO");
             }
@@ -239,7 +231,7 @@ public class App {
     record SimpleClass(String name,
                        Constructor<?> constructor,
                        Class<?> originalClass) {
-//        static private final Predicate<Object> isObject = Object.class::equals;
+        //        static private final Predicate<Object> isObject = Object.class::equals;
 //        static private final Predicate<java.lang.reflect.Method> isMethodFromObject = method -> isObject.test(method.getDeclaringClass());
         static private final Predicate<java.lang.reflect.Method> isInheritedFromObject = method -> method.getDeclaringClass() == Object.class;
 
