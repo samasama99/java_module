@@ -216,24 +216,14 @@ public class App {
         }
     }
 
-    @FunctionalInterface
-    public interface VarArgFunction {
-        Object invoke(Object... args);
-    }
-
-    @FunctionalInterface
-    interface SimpleMethodInterface {
-        Object invoke(Object... args);
-    }
-
-    static final class SimpleMethod implements SimpleMethodInterface {
+    static final class SimpleMethod {
         private final String name;
         private final String returnType;
         private final List<Parameter> parameters;
-        private final VarArgFunction invokable;
+        private final Function<Object[], ?> invokable;
 
         SimpleMethod(String name, String returnType, List<Parameter> parameters,
-                     VarArgFunction invokable) {
+                     Function<Object[], ?> invokable) {
             this.name = name;
             this.returnType = returnType;
             this.parameters = parameters;
@@ -243,7 +233,7 @@ public class App {
         static SimpleMethod fromMethod(Method method, Object object) {
             java.lang.reflect.Parameter[] parameters = method.getParameters();
             List<Parameter> parameterList = Arrays.stream(parameters).map(Parameter::fromParameter).toList();
-            return new SimpleMethod(method.getName(), method.getReturnType().getSimpleName(), parameterList, (Object... args) -> {
+            return new SimpleMethod(method.getName(), method.getReturnType().getSimpleName(), parameterList, (Object[] args) -> {
                 try {
                     return method.invoke(object, args);
                 } catch (Exception e) {
@@ -252,9 +242,9 @@ public class App {
             });
         }
 
-        @Override
         public Object invoke(Object... args) {
-            return invokable.invoke(args);
+            return invokable.apply(args);
+//            return invokable.invoke(args);
         }
 
 
