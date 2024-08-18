@@ -10,9 +10,7 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -27,13 +25,12 @@ public class App {
 
     private static final Map<String, SimpleObject> objects = new HashMap<>();
 
-    static Map<String, Function<String, ?>> parsers = Map.of(
-            "INT", Integer::parseInt,
-            "INTEGER", Integer::parseInt,
-            "LONG", Long::parseLong,
-            "DOUBLE", Double::parseDouble,
-            "STRING", Function.identity(),
-            "BOOLEAN", Boolean::parseBoolean
+    static Map<Class<?>, Function<String, ?>> parsers = Map.of(
+            int.class, Integer::parseInt,
+            long.class, Long::parseLong,
+            double.class, Double::parseDouble,
+            String.class, Function.identity(),
+            boolean.class, Boolean::parseBoolean
     );
 
     static void parseCommand(String input) throws InvocationTargetException, InstantiationException, IllegalAccessException {
@@ -81,7 +78,8 @@ public class App {
                     }
                     int index = 0;
                     for (var type : simpleClass.constructor().getParameterTypes()) {
-                        args[index] = parsers.get(type.getSimpleName().toUpperCase()).apply(parameters[index]);
+                        System.out.println(type);
+                        args[index] = parsers.get(type).apply(parameters[index]);
                         index++;
                     }
                     SimpleObject simpleObject = simpleClass.newInstance(args);
@@ -125,7 +123,7 @@ public class App {
                 SimpleObject simpleObject = objects.get(objectName);
                 if (simpleObject != null) {
                     SimpleField simpleField = simpleObject.simpleFields().get(fieldName);
-                    Object apply = parsers.get(simpleField.type().toUpperCase()).apply(value);
+                    Object apply = parsers.get(simpleField.type()).apply(value);
                     System.out.println(apply);
                     simpleField.setValue(apply);
                 } else {
@@ -151,7 +149,7 @@ public class App {
                         List<Parameter> parameters = simpleMethod.params();
 
                         if (parameters.isEmpty()) {
-                            if (simpleMethod.returnType.equals("VOID")) {
+                            if (simpleMethod.returnType().equals("VOID")) {
                                 simpleMethod.invoke();
                             } else
                                 System.out.println(simpleMethod.invoke());
@@ -163,9 +161,9 @@ public class App {
                                 List<Object> parsedValue = new ArrayList<>();
                                 try {
                                     for (int i = 0; i < parsedParams.length; i++) {
-                                        parsedValue.add(parsers.get(parameters.get(i).type().toUpperCase()).apply(parsedParams[i]));
+                                        parsedValue.add(parsers.get(parameters.get(i).type()).apply(parsedParams[i]));
                                     }
-                                    if (simpleMethod.returnType.equals("VOID"))
+                                    if (simpleMethod.returnType().equals("VOID"))
                                         simpleMethod.invoke(parsedValue.toArray());
                                     else
                                         System.out.println(simpleMethod.invoke(parsedValue.toArray()));
@@ -216,125 +214,4 @@ public class App {
         }
     }
 
-    static final class SimpleMethod {
-        private final String name;
-        private final String returnType;
-        private final List<Parameter> parameters;
-        private final Function<Object[], ?> invokable;
-
-        SimpleMethod(String name, String returnType, List<Parameter> parameters,
-                     Function<Object[], ?> invokable) {
-            this.name = name;
-            this.returnType = returnType;
-            this.parameters = parameters;
-            this.invokable = invokable;
-        }
-
-        static SimpleMethod fromMethod(Method method, Object object) {
-            java.lang.reflect.Parameter[] parameters = method.getParameters();
-            List<Parameter> parameterList = Arrays.stream(parameters).map(Parameter::fromParameter).toList();
-            return new SimpleMethod(method.getName(), method.getReturnType().getSimpleName(), parameterList, (Object[] args) -> {
-                try {
-                    return method.invoke(object, args);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        }
-
-        public Object invoke(Object... args) {
-            return invokable.apply(args);
-//            return invokable.invoke(args);
-        }
-
-
-        @Override
-        public String toString() {
-            return returnType + " : " + name + " " + parameters.stream().map(Parameter::toString).collect(Collectors.joining(", ", "(", ")"));
-        }
-
-        public String name() {
-            return name;
-        }
-
-        public String returnType() {
-            return returnType;
-        }
-
-        public List<Parameter> params() {
-            return parameters;
-        }
-    }
-
-    record Parameter(String type, String name) {
-        static Parameter fromField(Field field) {
-            return new Parameter(field.getType().getSimpleName(), field.getName());
-        }
-
-        static Parameter fromParameter(java.lang.reflect.Parameter parameter) {
-            return new Parameter(parameter.getType().getSimpleName(), parameter.getName());
-        }
-
-        @Override
-        public String toString() {
-            return type;
-        }
-    }
-
-    static final class SimpleField {
-        private final String type;
-        private final String name;
-        private final Field field;
-        private final Object object;
-
-        private SimpleField(String type, String name, Field field, Object object) {
-            this.type = type;
-            this.name = name;
-            this.field = field;
-            this.object = object;
-        }
-
-        static SimpleField fromField(Field field, Object object) {
-            field.setAccessible(true);
-            try {
-                return new SimpleField(field.getType().getSimpleName(), field.getName(), field, object);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        @Override
-        public String toString() {
-            try {
-                return name + " : " + type + " == " + field.get(object);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        public String type() {
-            return type;
-        }
-
-        public String name() {
-            return name;
-        }
-
-        Object getValue() {
-            try {
-                return field.get(this.object);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        void setValue(Object newValue) {
-            try {
-                field.set(this.object, newValue);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-    }
 }

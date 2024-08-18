@@ -18,7 +18,7 @@ record SimpleClass(String name,
     static public SimpleClass createNewSimpleClass(Class<?> c) {
         String name = c.getSimpleName();
 
-        List<App.Parameter> parameters = Arrays.stream(c.getDeclaredFields()).map(App.Parameter::fromField).toList();
+        List<Parameter> parameters = Arrays.stream(c.getDeclaredFields()).map(Parameter::fromField).toList();
 
         int numberOfParams = parameters.size();
 
@@ -34,18 +34,18 @@ record SimpleClass(String name,
         try {
             Object object = constructor.newInstance(args);
 
-            Map<String, App.SimpleMethod> simpleMethods = Arrays
+            Map<String, SimpleMethod> simpleMethods = Arrays
                     .stream(originalClass.getMethods())
                     .filter(isInheritedFromObject.negate())
-                    .map((m) -> App.SimpleMethod.fromMethod(m, object))
+                    .map((m) -> SimpleMethod.fromMethod(m, object))
                     .collect(Collectors.toMap(
                             (method) -> method.name().toUpperCase(),
                             Function.identity()
                     ));
 
-            Map<String, App.SimpleField> simpleFields = Arrays
+            Map<String, SimpleField> simpleFields = Arrays
                     .stream(originalClass.getDeclaredFields())
-                    .map((f) -> App.SimpleField.fromField(f, object))
+                    .map((f) -> SimpleField.fromField(f, object))
                     .collect(Collectors.toMap(
                             (field) -> field.name().toUpperCase(),
                             Function.identity()
