@@ -10,13 +10,11 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -39,22 +37,22 @@ public class App {
     );
 
     static void parseCommand(String input) throws InvocationTargetException, InstantiationException, IllegalAccessException {
-        String lscRegex = "lsc";
-        String lsoRegex = "lso";
-        String infoObjectRegex = "io\\s+(\\w+)";
-        String rmObjectRegex = "rm\\s+(\\w+)";
-        String infoClassRegex = "ic\\s+(\\w+)";
-        String newClassRegex = "new\\s+(\\w+)(\\s+([\\S\\s]+))*";
-        String editObjectRegex = "edit\\s+(\\w+)\\s+(\\w+)\\s+(\\w+)";
-        String callMethodRegex = "call\\s+(\\w+)\\s+(\\w+)(\\s+([\\S\\s]+))*";
+        String lsc = "lsc";
+        String lso = "lso";
+        String infoObject = "io\\s+(\\w+)";
+        String rmObject = "rm\\s+(\\w+)";
+        String infoClass = "ic\\s+(\\w+)";
+        String newClass = "new\\s+(\\w+)(\\s+([\\S\\s]+))*";
+        String editObject = "edit\\s+(\\w+)\\s+(\\w+)\\s+(\\w+)";
+        String callMethod = "call\\s+(\\w+)\\s+(\\w+)(\\s+([\\S\\s]+))*";
 
 
-        if (input.matches(lscRegex)) {
-            classes.values().stream().map(c -> c.name + Arrays.stream(c.constructor().getParameters()).map(p -> p.getName() + " : " + p.getType().getSimpleName()).collect(Collectors.joining(" , ", "( ", " )"))).forEach(System.out::println);
-        } else if (input.matches(lsoRegex)) {
+        if (input.equals(lsc)) {
+            classes.values().stream().map(c -> c.name() + Arrays.stream(c.constructor().getParameters()).map(p -> p.getName() + " : " + p.getType().getSimpleName()).collect(Collectors.joining(" , ", "( ", " )"))).forEach(System.out::println);
+        } else if (input.equals(lso)) {
             objects.keySet().forEach(System.out::println);
-        } else if (input.matches(infoClassRegex)) {
-            Matcher matcher = Pattern.compile(infoClassRegex).matcher(input);
+        } else if (input.matches(infoClass)) {
+            Matcher matcher = Pattern.compile(infoClass).matcher(input);
             if (matcher.find()) {
                 String group = matcher.group(1);
                 String className = group == null ? null : group.toUpperCase();
@@ -65,8 +63,8 @@ public class App {
                     System.out.println("no class is found with this name `" + className + "`");
                 }
             }
-        } else if (input.matches(newClassRegex)) {
-            Matcher matcher = Pattern.compile(newClassRegex).matcher(input);
+        } else if (input.matches(newClass)) {
+            Matcher matcher = Pattern.compile(newClass).matcher(input);
             if (matcher.find()) {
                 String className = matcher.group(1).toUpperCase();
                 String group = matcher.group(3);
@@ -75,6 +73,7 @@ public class App {
 
                 if (simpleClass != null) {
                     Object[] args = new Object[simpleClass.constructor().getParameterCount()];
+                    assert paramsGroup != null;
                     String[] parameters = paramsGroup.split(" ");
                     if (parameters.length != args.length) {
                         System.out.println("not enough arguments for the constructor");
@@ -82,7 +81,6 @@ public class App {
                     }
                     int index = 0;
                     for (var type : simpleClass.constructor().getParameterTypes()) {
-//                        System.out.println(type.getSimpleName().toUpperCase());
                         args[index] = parsers.get(type.getSimpleName().toUpperCase()).apply(parameters[index]);
                         index++;
                     }
@@ -93,8 +91,8 @@ public class App {
                     System.out.println("Failed to make instance of class: " + className + " Cause: no class with that name");
                 }
             }
-        } else if (input.matches(rmObjectRegex)) {
-            Matcher matcher = Pattern.compile(rmObjectRegex).matcher(input);
+        } else if (input.matches(rmObject)) {
+            Matcher matcher = Pattern.compile(rmObject).matcher(input);
             if (matcher.find()) {
                 String group = matcher.group(1);
                 String objectName = group == null ? null : group.toUpperCase();
@@ -104,19 +102,19 @@ public class App {
                     System.out.println("no object was removed");
                 }
             }
-        } else if (input.matches(infoObjectRegex)) {
-            Matcher matcher = Pattern.compile(infoObjectRegex).matcher(input);
+        } else if (input.matches(infoObject)) {
+            Matcher matcher = Pattern.compile(infoObject).matcher(input);
             if (matcher.find()) {
                 String className = matcher.group(1).toUpperCase();
                 if (objects.containsKey(className)) {
                     SimpleObject object = objects.get(className);
-                    object.simpleFields.values().forEach(System.out::println);
+                    object.simpleFields().values().forEach(System.out::println);
                     objects.get(className).simpleMethods().values().forEach(System.out::println);
                 } else System.out.println("NO");
             }
-        } else if (input.matches(editObjectRegex)) {
+        } else if (input.matches(editObject)) {
 
-            Pattern pattern = Pattern.compile(editObjectRegex);
+            Pattern pattern = Pattern.compile(editObject);
             Matcher matcher = pattern.matcher(input);
 
             if (matcher.find()) {
@@ -126,7 +124,7 @@ public class App {
 
                 SimpleObject simpleObject = objects.get(objectName);
                 if (simpleObject != null) {
-                    SimpleField simpleField = simpleObject.simpleField().get(fieldName);
+                    SimpleField simpleField = simpleObject.simpleFields().get(fieldName);
                     Object apply = parsers.get(simpleField.type().toUpperCase()).apply(value);
                     System.out.println(apply);
                     simpleField.setValue(apply);
@@ -135,8 +133,8 @@ public class App {
                 }
             }
 
-        } else if (input.matches(callMethodRegex)) {
-            Pattern pattern = Pattern.compile(callMethodRegex);
+        } else if (input.matches(callMethod)) {
+            Pattern pattern = Pattern.compile(callMethod);
             Matcher matcher = pattern.matcher(input);
 
             if (matcher.find()) {
@@ -226,102 +224,6 @@ public class App {
     @FunctionalInterface
     interface SimpleMethodInterface {
         Object invoke(Object... args);
-    }
-
-    record SimpleClass(String name,
-                       Constructor<?> constructor,
-                       Class<?> originalClass) {
-        //        static private final Predicate<Object> isObject = Object.class::equals;
-//        static private final Predicate<java.lang.reflect.Method> isMethodFromObject = method -> isObject.test(method.getDeclaringClass());
-        static private final Predicate<java.lang.reflect.Method> isInheritedFromObject = method -> method.getDeclaringClass() == Object.class;
-
-
-        static public SimpleClass createNewSimpleClass(Class<?> c) {
-            String name = c.getSimpleName();
-
-            List<Parameter> parameters = Arrays.stream(c.getDeclaredFields()).map(Parameter::fromField).toList();
-
-            int numberOfParams = parameters.size();
-
-            Constructor<?> parameterizedConstructor = Arrays.stream(c.getConstructors())
-                    .filter(constructor -> constructor.getParameterCount() == numberOfParams)
-                    .findFirst()
-                    .orElseThrow(NoValidParameterizedConstructor::new);
-
-            return new SimpleClass(name, parameterizedConstructor, c);
-        }
-
-        SimpleObject newInstance(Object... args) {
-            try {
-                Object object = constructor.newInstance(args);
-
-                Map<String, SimpleMethod> simpleMethods = Arrays
-                        .stream(originalClass.getMethods())
-                        .filter(isInheritedFromObject.negate())
-                        .map((m) -> SimpleMethod.fromMethod(m, object))
-                        .collect(Collectors.toMap(
-                                (method) -> method.name().toUpperCase(),
-                                Function.identity()
-                        ));
-
-                Map<String, SimpleField> simpleFields = Arrays
-                        .stream(originalClass.getDeclaredFields())
-                        .map((f) -> SimpleField.fromField(f, object))
-                        .collect(Collectors.toMap(
-                                (field) -> field.name().toUpperCase(),
-                                Function.identity()
-                        ));
-
-                return new SimpleObject(this, name.toUpperCase() + object.hashCode(), object, simpleMethods, simpleFields);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-
-        static public class NoValidParameterizedConstructor extends RuntimeException {
-            public NoValidParameterizedConstructor() {
-                super();
-            }
-        }
-    }
-
-    static final class SimpleObject {
-        private final SimpleClass simpleClass;
-        private final String objectName;
-        private final Object object;
-        private final Map<String, SimpleMethod> simpleMethods;
-        private final Map<String, SimpleField> simpleFields;
-
-        SimpleObject(SimpleClass simpleClass,
-                     String objectName,
-                     Object object,
-                     Map<String, SimpleMethod> simpleMethods,
-                     Map<String, SimpleField> simpleFields
-        ) {
-            this.simpleClass = simpleClass;
-            this.objectName = objectName;
-            this.object = object;
-            this.simpleMethods = simpleMethods;
-            this.simpleFields = simpleFields;
-        }
-
-        public SimpleClass simpleClass() {
-            return simpleClass;
-        }
-
-        public String objectName() {
-            return objectName;
-        }
-
-        public Map<String, SimpleMethod> simpleMethods() {
-            return simpleMethods;
-        }
-
-        public Map<String, SimpleField> simpleField() {
-            return simpleFields;
-        }
-
     }
 
     static final class SimpleMethod implements SimpleMethodInterface {
