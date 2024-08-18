@@ -6,6 +6,7 @@ public class User {
     private int age;
     private boolean isActive = true;
     private double wallet;
+
     public User(String fName, String lName, int age, boolean isActive, double wallet) {
         this.fName = fName;
         this.lName = lName;

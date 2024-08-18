@@ -34,33 +34,47 @@ public class App {
     );
 
     static void parseCommand(String input) throws InvocationTargetException, InstantiationException, IllegalAccessException {
-        String lsc = "lsc";
-        String lso = "lso";
-        String infoObject = "io\\s+(\\w+)";
+        String infoObject = "object\\s+(\\w+)";
         String rmObject = "rm\\s+(\\w+)";
-        String infoClass = "ic\\s+(\\w+)";
         String newClass = "new\\s+(\\w+)(\\s+([\\S\\s]+))*";
         String editObject = "edit\\s+(\\w+)\\s+(\\w+)\\s+(\\w+)";
         String callMethod = "call\\s+(\\w+)\\s+(\\w+)(\\s+([\\S\\s]+))*";
 
 
-        if (input.equals(lsc)) {
+        if (input.equalsIgnoreCase("class")) {
             classes.values().stream().map(c -> c.name() + Arrays.stream(c.constructor().getParameters()).map(p -> p.getName() + " : " + p.getType().getSimpleName()).collect(Collectors.joining(" , ", "( ", " )"))).forEach(System.out::println);
-        } else if (input.equals(lso)) {
-            objects.keySet().forEach(System.out::println);
-        } else if (input.matches(infoClass)) {
-            Matcher matcher = Pattern.compile(infoClass).matcher(input);
-            if (matcher.find()) {
-                String group = matcher.group(1);
-                String className = group == null ? null : group.toUpperCase();
-                SimpleClass simpleClass = classes.get(className);
-                if (simpleClass != null) {
-                    System.out.println(simpleClass);
-                } else {
-                    System.out.println("no class is found with this name `" + className + "`");
-                }
+            return;
+        }
+
+        if (input.toLowerCase().startsWith("class ")) {
+            String tmp = input.split(" ")[1];
+            String className = tmp == null ? null : tmp.trim().toUpperCase();
+            SimpleClass simpleClass = classes.get(className);
+            if (simpleClass != null) {
+                System.out.println(simpleClass);
+            } else {
+                System.out.println("no class is found with this name `" + className + "`");
             }
-        } else if (input.matches(newClass)) {
+            return;
+        }
+
+        if (input.equalsIgnoreCase("object")) {
+            objects.keySet().forEach(System.out::println);
+            return;
+        }
+
+        if (input.toLowerCase().startsWith("object ")) {
+            String tmp = input.split(" ")[1];
+            String objectName = tmp == null ? null : tmp.trim().toUpperCase();
+            if (objects.containsKey(objectName)) {
+                SimpleObject object = objects.get(objectName);
+                object.simpleFields().values().forEach(System.out::println);
+                objects.get(objectName).simpleMethods().values().forEach(System.out::println);
+            } else System.out.println("NO");
+            return;
+        }
+
+        if (input.matches(newClass)) {
             Matcher matcher = Pattern.compile(newClass).matcher(input);
             if (matcher.find()) {
                 String className = matcher.group(1).toUpperCase();
@@ -89,7 +103,10 @@ public class App {
                     System.out.println("Failed to make instance of class: " + className + " Cause: no class with that name");
                 }
             }
-        } else if (input.matches(rmObject)) {
+            return;
+        }
+
+        if (input.matches(rmObject)) {
             Matcher matcher = Pattern.compile(rmObject).matcher(input);
             if (matcher.find()) {
                 String group = matcher.group(1);
@@ -100,17 +117,11 @@ public class App {
                     System.out.println("no object was removed");
                 }
             }
-        } else if (input.matches(infoObject)) {
-            Matcher matcher = Pattern.compile(infoObject).matcher(input);
-            if (matcher.find()) {
-                String className = matcher.group(1).toUpperCase();
-                if (objects.containsKey(className)) {
-                    SimpleObject object = objects.get(className);
-                    object.simpleFields().values().forEach(System.out::println);
-                    objects.get(className).simpleMethods().values().forEach(System.out::println);
-                } else System.out.println("NO");
-            }
-        } else if (input.matches(editObject)) {
+            return;
+        }
+
+
+        if (input.matches(editObject)) {
 
             Pattern pattern = Pattern.compile(editObject);
             Matcher matcher = pattern.matcher(input);
@@ -130,8 +141,10 @@ public class App {
                     System.out.println("no object with this name: " + objectName);
                 }
             }
+            return;
+        }
 
-        } else if (input.matches(callMethod)) {
+        if (input.matches(callMethod)) {
             Pattern pattern = Pattern.compile(callMethod);
             Matcher matcher = pattern.matcher(input);
 
@@ -184,10 +197,9 @@ public class App {
             } else {
                 System.out.println("Input does not match the pattern.");
             }
-        } else {
-            System.out.println("Please enter a valid command");
+            return;
         }
-
+        System.out.println("Please enter a valid command");
     }
 
     public static void main(String[] args) {
