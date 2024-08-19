@@ -3,7 +3,6 @@ package org.example;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -17,10 +16,8 @@ record SimpleClass(String name,
 
     static public SimpleClass createNewSimpleClass(Class<?> c) {
         String name = c.getSimpleName();
-
-        List<Parameter> parameters = Arrays.stream(c.getDeclaredFields()).map(Parameter::fromField).toList();
-
-        int numberOfParams = parameters.size();
+        var parameters = c.getDeclaredFields();
+        int numberOfParams = parameters.length;
 
         Constructor<?> parameterizedConstructor = Arrays.stream(c.getConstructors())
                 .filter(constructor -> constructor.getParameterCount() == numberOfParams)
@@ -39,19 +36,19 @@ record SimpleClass(String name,
                     .filter(isInheritedFromObject.negate())
                     .map((m) -> SimpleMethod.fromMethod(m, object))
                     .collect(Collectors.toMap(
-                            (method) -> method.name().toUpperCase(),
+                            SimpleMethod::name,
                             Function.identity()
                     ));
 
             Map<String, SimpleField> simpleFields = Arrays
                     .stream(originalClass.getDeclaredFields())
-                    .map((f) -> SimpleField.fromField(f, object))
+                    .map((f) -> SimpleField.fromReflectField(f, object))
                     .collect(Collectors.toMap(
-                            (field) -> field.name().toUpperCase(),
+                            SimpleField::name,
                             Function.identity()
                     ));
 
-            return new SimpleObject(this, name.toUpperCase() + object.hashCode(), object, simpleMethods, simpleFields);
+            return new SimpleObject(name + object.hashCode(), simpleMethods, simpleFields);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

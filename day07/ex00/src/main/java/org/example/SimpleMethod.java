@@ -1,18 +1,18 @@
 package org.example;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.Arrays;
-import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 final class SimpleMethod {
     private final String name;
     private final String returnType;
-    private final List<Parameter> parameters;
+    private final Parameter[] parameters;
     private final Function<Object[], ?> invokable;
 
-    SimpleMethod(String name, String returnType, List<Parameter> parameters,
+    SimpleMethod(String name, String returnType, Parameter[] parameters,
                  Function<Object[], ?> invokable) {
         this.name = name;
         this.returnType = returnType;
@@ -21,9 +21,8 @@ final class SimpleMethod {
     }
 
     static SimpleMethod fromMethod(Method method, Object object) {
-        java.lang.reflect.Parameter[] parameters = method.getParameters();
-        List<Parameter> parameterList = Arrays.stream(parameters).map(Parameter::fromParameter).toList();
-        return new SimpleMethod(method.getName(), method.getReturnType().getSimpleName(), parameterList, (Object[] args) -> {
+        Parameter[] parameters = method.getParameters();
+        return new SimpleMethod(method.getName(), method.getReturnType().getSimpleName(), parameters, (Object[] args) -> {
             try {
                 return method.invoke(object, args);
             } catch (Exception e) {
@@ -39,7 +38,7 @@ final class SimpleMethod {
 
     @Override
     public String toString() {
-        return returnType + " : " + name + " " + parameters.stream().map(Parameter::toString).collect(Collectors.joining(", ", "(", ")"));
+        return returnType + " : " + name + " " + Arrays.stream(parameters).peek(System.out::println).map(p -> p.getType().getSimpleName()).collect(Collectors.joining(", ", "(", ")"));
     }
 
     public String name() {
@@ -50,7 +49,7 @@ final class SimpleMethod {
         return returnType;
     }
 
-    public List<Parameter> params() {
+    public Parameter[] params() {
         return parameters;
     }
 }

@@ -15,7 +15,7 @@ final class SimpleField {
         this.object = object;
     }
 
-    static SimpleField fromField(Field field, Object object) {
+    static SimpleField fromReflectField(Field field, Object object) {
         field.setAccessible(true);
         try {
             return new SimpleField(field.getType(), field.getName(), field, object);
